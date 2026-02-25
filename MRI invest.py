@@ -3,186 +3,178 @@ import pandas as pd
 import numpy as np
 import altair as alt
 
+# =============================
+# ESAOTE BRAND STYLE
+# =============================
 
-st.title("MRI Return of investment ")
+
+ESAOTE_GREEN = "#6CC24A"
+
+# =============================
+# ESAOTE LOGO + HEADER
+# =============================
+
+col1, col2 = st.columns([1, 5])
+
+with col1:
+    st.image(
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s",
+        width=180
+    )
+
+with col2:
+    st.markdown(
+        "<h1 style='margin-bottom:0;'>Esaote MRI – Return on Investment Simulator</h1>",
+        unsafe_allow_html=True
+    )
 
 st.markdown("### Investment Parameters")
 
-anni = st.slider(""Analysis Period (Years)"", 1, 15, 10)
+years = st.slider("Analysis Period (Years)", 1, 15, 10)
+
+# =============================
+# COST SECTION
+# =============================
 
 st.markdown("#### Capital & Operational Costs")
 
-# Costi
-investimento = st.number_input("Initial investment (€)", min_value=0, value=500000, step=10000)
-radio = st.number_input("Technology & Reporting Cost (Yearly)", min_value=0, value=50000, step=5000)
-electrical_cost = st.number_input("Electricity cost (Yearly)", min_value=0, value=20000, step=2000)
-maintenance = st.number_input(""Annual Service Cost", min_value=0, value=20000, step=5000)
+initial_investment = st.number_input("Initial Investment (€)", min_value=0, value=500000, step=10000)
+technology_reporting_cost = st.number_input("Technology & Reporting Cost (Yearly)", min_value=0, value=50000, step=5000)
+electricity_cost = st.number_input("Electricity Cost (Yearly)", min_value=0, value=20000, step=2000)
+maintenance_cost = st.number_input("Annual Service & Maintenance Cost (€)", min_value=0, value=20000, step=5000)
+
+# =============================
+# REVENUE SECTION
+# =============================
 
 st.markdown("#### Revenue Assumptions")
 
-# Guadagni
-Num_esami = st.slider("Examinations per day", 1, 25, 12)
-Giorni= st.slider("Working days per year", 1, 365, 200)
-Price = st.slider("Average Exam price", 1, 1000, 200)
-Guadagno = Num_esami*Price*Giorni;
+exams_per_day = st.slider("Examinations per Day", 1, 25, 12)
+working_days = st.slider("Working Days per Year", 1, 365, 200)
+average_price = st.slider("Average Exam Price (€)", 1, 1000, 200)
 
-# Calcolo costo anno per anno
-spese = [investimento]
-ricavi = [0]
-rad=0
-serv=0
-power_cost=0
-Income=0
-for anno in range(1, anni + 1):
-    rad = (rad + radio)
-    power_cost = (power_cost + electrical_cost)
-    service= (maintenance + serv)
-    Income= (Income+Guadagno)
-    spese.append(investimento+(rad+ power_cost))
-    ricavi.append(Income)
+annual_revenue = exams_per_day * average_price * working_days
 
-st.subheader(f" Expense in {anni} years: ")
-st.write("Costs YoY (€):")
-st.write(spese)
-st.subheader(f" Income in {anni} years: ")
-st.write("Income YoY (€):")
-st.write(ricavi)
+# =============================
+# CALCULATIONS
+# =============================
+
+expenses = [initial_investment]
+revenues = [0]
+
+tech_cost_cumulative = 0
+electricity_cost_cumulative = 0
+maintenance_cumulative = 0
+income_cumulative = 0
+
+for year in range(1, years + 1):
+    tech_cost_cumulative += technology_reporting_cost
+    electricity_cost_cumulative += electricity_cost
+    maintenance_cumulative += maintenance_cost
+    income_cumulative += annual_revenue
+    
+    total_expenses = (
+        initial_investment +
+        tech_cost_cumulative +
+        electricity_cost_cumulative +
+        maintenance_cumulative
+    )
+    
+    expenses.append(total_expenses)
+    revenues.append(income_cumulative)
 
 df = pd.DataFrame({
-    "Anno": range(0, anni + 1),
-    "Spese": spese,
-    "Ricavi": ricavi
+    "Year": range(0, years + 1),
+    "Expenses": expenses,
+    "Revenues": revenues
 })
 
+df["Profit"] = df["Revenues"] - df["Expenses"]
+
 # =============================
-# CALCOLI AGGIUNTIVI
+# BREAK EVEN CALCULATION
 # =============================
 
-df["Profitto"] = df["Ricavi"] - df["Spese"]
-
-# Calcolo anno di break-even, escludendo anno 0
-breakeven_year = None
+break_even_year = None
 for i in range(1, len(df)):
-    if df["Profitto"][i] >= 0:
-        breakeven_year = df["Anno"][i]
+    if df["Profit"][i] >= 0:
+        break_even_year = df["Year"][i]
         break
 
-st.subheader("Financial Performance Overview")
+st.markdown("## Financial Performance Overview")
 
 # =============================
-# BARRE AFFIANCATE
+# CHART
 # =============================
 
 df_melted = df.melt(
-    id_vars="Anno",
-    value_vars=["Spese", "Ricavi"],
-    var_name="Categoria",
-    value_name="Valore"
+    id_vars="Year",
+    value_vars=["Expenses", "Revenues"],
+    var_name="Category",
+    value_name="Value"
 )
 
 bars = alt.Chart(df_melted).mark_bar(
-    opacity=0.4,
-    size=35
+    opacity=0.3,
+    size=40
 ).encode(
-    x=alt.X("Anno:O", title="Anno"),
-    y=alt.Y("Valore:Q", title="Euro (€)"),
+    x=alt.X("Year:O", title="Year"),
+    y=alt.Y("Value:Q", title="Euro (€)"),
     color=alt.Color(
-        "Categoria:N",
+        "Category:N",
         scale=alt.Scale(
-            domain=["Spese", "Ricavi"],
-            range=["#d62728", "#2ca02c"]
+            domain=["Expenses", "Revenues"],
+            range=['red', ESAOTE_GREEN]
         ),
-        legend=alt.Legend(title="Barre")
+        legend=alt.Legend(title="")
     ),
-    xOffset="Categoria:N"
+    xOffset="Category:N"
 )
 
-# =============================
-# LINEE
-# =============================
-
-df_lines = df.melt(
-    id_vars="Anno",
-    value_vars=["Spese", "Ricavi"],
-    var_name="Linea",
-    value_name="Valore"
-)
-
-lines = alt.Chart(df_lines).mark_line(strokeWidth=3).encode(
-    x="Anno:O",
-    y="Valore:Q",
+lines = alt.Chart(df_melted).mark_line(strokeWidth=4).encode(
+    x="Year:O",
+    y="Value:Q",
     color=alt.Color(
-        "Linea:N",
+        "Category:N",
         scale=alt.Scale(
-            domain=["Spese", "Ricavi"],
-            range=["#b2182b", "#1b7837"]
+            domain=["Expenses", "Revenues"],
+            range=['red', ESAOTE_GREEN]
         ),
-        legend=alt.Legend(title="Linee")
+        legend=None
     )
 )
-
-# =============================
-# TOOLTIP UNICO PER OGNI ANNO
-# =============================
-
-tooltip = alt.Chart(df).mark_point(opacity=0).encode(
-    x="Anno:O",
-    y="Profitto:Q",
-    tooltip=[
-        alt.Tooltip("Anno:O", title="Anno"),
-        alt.Tooltip("Ricavi:Q", title="Ricavi (€)"),
-        alt.Tooltip("Spese:Q", title="Spese (€)"),
-    ]
-)
-
-# Punto break-even
-breakeven_point = None
-if breakeven_year is not None:
-    breakeven_point = alt.Chart(df[df["Anno"]==breakeven_year]).mark_circle(
-        size=250,
-        color="gold"
-    ).encode(
-        x="Anno:O",
-        y="Profitto:Q",
-        tooltip=[
-            alt.Tooltip("Anno:O", title="Anno"),
-            alt.Tooltip("Ricavi:Q", title="Ricavi (€)"),
-            alt.Tooltip("Spese:Q", title="Spese (€)")
-        ]
-    )
-
-# =============================
-# LINEA BREAK-EVEN ORIZZONTALE
-# =============================
 
 break_even_line = alt.Chart(pd.DataFrame({"y":[0]})).mark_rule(
-    strokeDash=[6,6],
+    strokeDash=[5,5],
     color="black"
 ).encode(y="y:Q")
 
-# =============================
-# GRAFICO FINALE
-# =============================
-
-if breakeven_point is not None:
-    final_chart = bars + lines + break_even_line + breakeven_point + tooltip
+if break_even_year is not None:
+    break_even_point = alt.Chart(df[df["Year"]==break_even_year]).mark_circle(
+        size=300,
+        color='yellow'
+    ).encode(
+        x="Year:O",
+        y="Profit:Q"
+    )
+    final_chart = bars + lines + break_even_line + break_even_point
 else:
-    final_chart = bars + lines + break_even_line + tooltip
+    final_chart = bars + lines + break_even_line
 
 st.altair_chart(
     final_chart.properties(
-        width=1600,
+        width=1500,
         height=500,
-        title="Analisi Completa ROI con Break-even e Tooltip Unico"
+        title="Esaote MRI Investment Performance"
     ),
     use_container_width=True
 )
 
 # =============================
-# MESSAGGIO BREAK EVEN
+# BREAK EVEN MESSAGE
 # =============================
 
-if breakeven_year is not None:
-    st.success(f"✅ Break-even raggiunto nell'anno {breakeven_year}")
+if break_even_year is not None:
+    st.success(f"Break-even achieved in Year {break_even_year}")
 else:
-    st.warning("⚠️ Break-even non raggiunto nel periodo selezionato")
+    st.warning("Break-even not reached within selected period")
