@@ -4,7 +4,7 @@ import numpy as np
 import altair as alt
 
 
-st.title("Calcolatore ROI Interattivo")
+st.title("Calcolatore Investimento MRI ")
 
 anni = st.slider("Numero di anni", 1, 15, 5)
 
@@ -35,14 +35,12 @@ for anno in range(1, anni + 1):
     spese.append(investimento+(rad+ power_cost))
     ricavi.append(Income)
 
-
 st.subheader(f" Costi in {anni} anni: ")
 st.write("Costi anno per anno (€):")
 st.write(spese)
 st.subheader(f" Ricavo in {anni} anni: ")
 st.write("Ricavo anno per anno (€):")
 st.write(ricavi)
-
 
 df = pd.DataFrame({
     "Anno": range(0, anni + 1),
@@ -128,7 +126,6 @@ tooltip = alt.Chart(df).mark_point(opacity=0).encode(
         alt.Tooltip("Anno:O", title="Anno"),
         alt.Tooltip("Ricavi:Q", title="Ricavi (€)"),
         alt.Tooltip("Spese:Q", title="Spese (€)"),
-        alt.Tooltip("Profitto:Q", title="Profitto (€)")
     ]
 )
 
@@ -143,7 +140,6 @@ if breakeven_year is not None:
         y="Profitto:Q",
         tooltip=[
             alt.Tooltip("Anno:O", title="Anno"),
-            alt.Tooltip("Profitto:Q", title="Profitto (€)"),
             alt.Tooltip("Ricavi:Q", title="Ricavi (€)"),
             alt.Tooltip("Spese:Q", title="Spese (€)")
         ]
