@@ -16,8 +16,8 @@ maintenance = st.number_input("yearly average Service cost (1y)", min_value=0.0,
 
 # Guadagni
 Num_esami = st.slider("Numero di esami al giorno", 1, 25, 5)
-Giorni= st.slider("Numero giorni lavorativi per anno", 1, 20, 365)
-Price = st.slider("Prezzo_esame (al giorno)", 1, 20, 1000)
+Giorni= st.slider("Numero giorni lavorativi per anno", 1, 365, 200)
+Price = st.slider("Prezzo_esame (al giorno)", 1, 1000, 200)
 Guadagno = Num_esami*Price*Giorni;
 
 # Calcolo costo anno per anno
