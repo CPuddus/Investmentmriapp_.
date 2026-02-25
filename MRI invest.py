@@ -6,7 +6,7 @@ import altair as alt
 
 st.title("Calcolatore Investimento MRI ")
 
-anni = st.slider("Numero di anni", 1, 15, 5)
+anni = st.slider("Numero di anni", 1, 15, 10)
 
 # Costi
 investimento = st.number_input("Investimento iniziale (€)", min_value=0.0, value=500000.0, step=10000.0)
