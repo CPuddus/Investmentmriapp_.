@@ -97,7 +97,7 @@ bars = alt.Chart(df_melted).mark_bar(
 
 df_lines = df.melt(
     id_vars="Anno",
-    value_vars=["Spese", "Ricavi", "Profitto"],
+    value_vars=["Spese", "Ricavi"],
     var_name="Linea",
     value_name="Valore"
 )
@@ -108,8 +108,8 @@ lines = alt.Chart(df_lines).mark_line(strokeWidth=3).encode(
     color=alt.Color(
         "Linea:N",
         scale=alt.Scale(
-            domain=["Spese", "Ricavi", "Profitto"],
-            range=["#b2182b", "#1b7837", "#2166ac"]
+            domain=["Spese", "Ricavi"],
+            range=["#b2182b", "#1b7837"]
         ),
         legend=alt.Legend(title="Linee")
     )
