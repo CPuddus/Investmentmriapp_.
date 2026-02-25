@@ -21,7 +21,7 @@ Price = st.slider("Prezzo_esame (al giorno)", 1, 20, 1000)
 Guadagno = Num_esami*Price*Giorni;
 
 # Calcolo costo anno per anno
-spese = [0]
+spese = [investimento]
 ricavi = [0]
 rad=0
 serv=0
