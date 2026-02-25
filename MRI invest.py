@@ -157,7 +157,7 @@ if break_even_year is not None:
         x="Year:O",
         y="Profit:Q"
     )
-    final_chart = bars + lines + break_even_line + break_even_point
+    final_chart = bars + lines + break_even_line
 else:
     final_chart = bars + lines + break_even_line
 
