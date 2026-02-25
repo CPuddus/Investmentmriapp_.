@@ -165,7 +165,7 @@ else:
 
 st.altair_chart(
     final_chart.properties(
-        width=900,
+        width=1600,
         height=500,
         title="Analisi Completa ROI con Break-even e Tooltip Unico"
     ),
