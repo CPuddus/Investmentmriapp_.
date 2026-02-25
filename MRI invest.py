@@ -6,18 +6,24 @@ import altair as alt
 
 st.title("MRI Return of investment ")
 
-anni = st.slider("Years", 1, 15, 10)
+st.markdown("### Investment Parameters")
+
+anni = st.slider(""Analysis Period (Years)"", 1, 15, 10)
+
+st.markdown("#### Capital & Operational Costs")
 
 # Costi
 investimento = st.number_input("Initial investment (€)", min_value=0, value=500000, step=10000)
-radio = st.number_input("Tech and reporting cost (1y)", min_value=0, value=50000, step=5000)
-electrical_cost = st.number_input("Electricity cost (1y)", min_value=0, value=20000, step=2000)
-maintenance = st.number_input("Yearly average Service cost (1y)", min_value=0, value=20000, step=5000)
+radio = st.number_input("Technology & Reporting Cost (Yearly)", min_value=0, value=50000, step=5000)
+electrical_cost = st.number_input("Electricity cost (Yearly)", min_value=0, value=20000, step=2000)
+maintenance = st.number_input(""Annual Service Cost", min_value=0, value=20000, step=5000)
+
+st.markdown("#### Revenue Assumptions")
 
 # Guadagni
-Num_esami = st.slider("Number of examinations per day", 1, 25, 12)
+Num_esami = st.slider("Examinations per day", 1, 25, 12)
 Giorni= st.slider("Working days per year", 1, 365, 200)
-Price = st.slider("Exam price", 1, 1000, 200)
+Price = st.slider("Average Exam price", 1, 1000, 200)
 Guadagno = Num_esami*Price*Giorni;
 
 # Calcolo costo anno per anno
@@ -61,7 +67,7 @@ for i in range(1, len(df)):
         breakeven_year = df["Anno"][i]
         break
 
-st.subheader("Dashboard ROI and Break-even")
+st.subheader("Financial Performance Overview")
 
 # =============================
 # BARRE AFFIANCATE
