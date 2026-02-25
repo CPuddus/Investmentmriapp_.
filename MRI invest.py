@@ -4,15 +4,15 @@ import numpy as np
 import altair as alt
 
 
-st.title("Calcolatore Investimento MRI ")
+st.title("MRI Return of investment ")
 
 anni = st.slider("Numero di anni", 1, 15, 10)
 
 # Costi
-investimento = st.number_input("Investimento iniziale (€)", min_value=0.0, value=500000.0, step=10000.0)
-radio = st.number_input("Costo tech and reporting (1y)", min_value=0.0, value=50000.0, step=5000.0)
-electrical_cost = st.number_input("Costo elettricità (1y)", min_value=0.0, value=20000.0, step=2000.0)
-maintenance = st.number_input("yearly average Service cost (1y)", min_value=0.0, value=20000.0, step=5000.0)
+investimento = st.number_input("Initial investment (€)", min_value=0, value=500000, step=10000)
+radio = st.number_input("Costo tech and reporting (1y)", min_value=0, value=50000, step=5000)
+electrical_cost = st.number_input("Electricity cost (1y)", min_value=0, value=20000, step=2000)
+maintenance = st.number_input("yearly average Service cost (1y)", min_value=0, value=20000, step=5000)
 
 # Guadagni
 Num_esami = st.slider("Numero di esami al giorno", 1, 25, 12)
