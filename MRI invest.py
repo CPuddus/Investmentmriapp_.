@@ -19,7 +19,7 @@ col1, col2 = st.columns([1, 5])
 with col1:
     st.image(
         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s",
-        width=500
+        width=180
     )
 
 with col2:
@@ -144,6 +144,31 @@ lines = alt.Chart(df_melted).mark_line(strokeWidth=4).encode(
     )
 )
 
+break_even_line = alt.Chart(pd.DataFrame({"y":[0]})).mark_rule(
+    strokeDash=[5,5],
+    color="black"
+).encode(y="y:Q")
+
+if break_even_year is not None:
+    break_even_point = alt.Chart(df[df["Year"]==break_even_year]).mark_circle(
+        size=300,
+        color='yellow'
+    ).encode(
+        x="Year:O",
+        y="Profit:Q"
+    )
+    final_chart = bars + lines + break_even_line + break_even_point
+else:
+    final_chart = bars + lines + break_even_line
+
+st.altair_chart(
+    final_chart.properties(
+        width=1500,
+        height=500,
+        title="Esaote MRI Investment Performance"
+    ),
+    use_container_width=True
+)
 
 # =============================
 # BREAK EVEN MESSAGE
