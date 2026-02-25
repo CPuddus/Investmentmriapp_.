@@ -144,7 +144,6 @@ lines = alt.Chart(df_melted).mark_line(strokeWidth=4).encode(
     )
 )
 
-)
 
 # =============================
 # BREAK EVEN MESSAGE
