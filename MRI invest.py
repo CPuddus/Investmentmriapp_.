@@ -19,7 +19,7 @@ col1, col2 = st.columns([1, 5])
 with col1:
     st.image(
         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s",
-        width=180
+        width=500
     )
 
 with col2:
