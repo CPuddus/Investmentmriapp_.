@@ -6,17 +6,17 @@ import altair as alt
 
 st.title("MRI Return of investment ")
 
-anni = st.slider("Numero di anni", 1, 15, 10)
+anni = st.slider("Years", 1, 15, 10)
 
 # Costi
 investimento = st.number_input("Initial investment (€)", min_value=0, value=500000, step=10000)
-radio = st.number_input("Costo tech and reporting (1y)", min_value=0, value=50000, step=5000)
+radio = st.number_input("Tech and reporting cost (1y)", min_value=0, value=50000, step=5000)
 electrical_cost = st.number_input("Electricity cost (1y)", min_value=0, value=20000, step=2000)
 maintenance = st.number_input("Yearly average Service cost (1y)", min_value=0, value=20000, step=5000)
 
 # Guadagni
 Num_esami = st.slider("Number of examinations per day", 1, 25, 12)
-Giorni= st.slider("Workind days per year", 1, 365, 200)
+Giorni= st.slider("Working days per year", 1, 365, 200)
 Price = st.slider("Exam price", 1, 1000, 200)
 Guadagno = Num_esami*Price*Giorni;
 
@@ -35,11 +35,11 @@ for anno in range(1, anni + 1):
     spese.append(investimento+(rad+ power_cost))
     ricavi.append(Income)
 
-st.subheader(f" Costi in {anni} anni: ")
-st.write("Costi anno per anno (€):")
+st.subheader(f" Expense in {anni} years: ")
+st.write("Costs YoY (€):")
 st.write(spese)
-st.subheader(f" Ricavo in {anni} anni: ")
-st.write("Ricavo anno per anno (€):")
+st.subheader(f" Income in {anni} years: ")
+st.write("Income YoY (€):")
 st.write(ricavi)
 
 df = pd.DataFrame({
@@ -61,7 +61,7 @@ for i in range(1, len(df)):
         breakeven_year = df["Anno"][i]
         break
 
-st.subheader("Dashboard ROI e Break-even")
+st.subheader("Dashboard ROI and Break-even")
 
 # =============================
 # BARRE AFFIANCATE
