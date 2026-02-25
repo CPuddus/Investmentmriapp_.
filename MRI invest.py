@@ -15,7 +15,7 @@ electrical_cost = st.number_input("Costo elettricità (1y)", min_value=0.0, valu
 maintenance = st.number_input("yearly average Service cost (1y)", min_value=0.0, value=20000.0, step=5000.0)
 
 # Guadagni
-Num_esami = st.slider("Numero di esami al giorno", 1, 25, 5)
+Num_esami = st.slider("Numero di esami al giorno", 1, 25, 12)
 Giorni= st.slider("Numero giorni lavorativi per anno", 1, 365, 200)
 Price = st.slider("Prezzo_esame (al giorno)", 1, 1000, 200)
 Guadagno = Num_esami*Price*Giorni;
