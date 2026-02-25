@@ -61,7 +61,7 @@ for i in range(1, len(df)):
         breakeven_year = df["Anno"][i]
         break
 
-st.subheader("Dashboard ROI Completa con Break-even e Tooltip Unico")
+st.subheader("Dashboard ROI e Break-even")
 
 # =============================
 # BARRE AFFIANCATE
