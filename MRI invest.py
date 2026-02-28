@@ -159,98 +159,44 @@ st.altair_chart(line_chart.properties(height=400), use_container_width=True)
 # =============================
 # SALES INTERNATIONAL – CASH FLOW CURVE
 # =============================
+# =============================
+# INVESTMENT PERFORMANCE OVERVIEW – ANNUAL CASH FLOW HISTOGRAM
+# =============================
 
-st.markdown("## Investment Performance Overview")
+st.markdown("## Annual Cash Flow Overview")
 
-# Cash flow cumulativo
-cashflow = []
-for y in range(0, years + 1):
-    if y == 0:
-        cashflow.append(-initial_investment)
-    else:
-        cumulative_profit = (annual_revenue * y) - (
-            initial_investment +
-            technology_reporting_cost * y +
-            electricity_cost * y +
-            maintenance_cost * y
-        )
-        cashflow.append(cumulative_profit)
+# Cash flow annuale
+annual_cashflow = []
+for y in range(1, years + 1):
+    annual_profit = (annual_revenue) - (
+        technology_reporting_cost +
+        electricity_cost +
+        maintenance_cost
+    )
+    annual_cashflow.append(annual_profit)
 
 cf_df = pd.DataFrame({
-    "Year": range(0, years + 1),
-    "CashFlow": cashflow
+    "Year": range(1, years + 1),
+    "AnnualCashFlow": annual_cashflow
 })
 
-# Break-even
-break_even_year = None
-for i in range(len(cf_df)):
-    if cf_df["CashFlow"].iloc[i] >= 0:
-        break_even_year = cf_df["Year"].iloc[i]
-        break
+# Colore positivo/negativo
+cf_df["Color"] = cf_df["AnnualCashFlow"].apply(lambda x: ESAOTE_GREEN if x >=0 else "#C44E52")
 
-# Area positiva / negativa
-cf_df["Positive"] = cf_df["CashFlow"].apply(lambda x: x if x > 0 else 0)
-cf_df["Negative"] = cf_df["CashFlow"].apply(lambda x: x if x < 0 else 0)
-
-# Area rossa (sotto zero)
-area_neg = alt.Chart(cf_df).mark_area(
-    color="#C44E52",
-    opacity=0.4
-).encode(
-    x="Year:O",
-    y="Negative:Q"
+# Istogramma anno per anno
+bar_chart = alt.Chart(cf_df).mark_bar().encode(
+    x=alt.X("Year:O", title="Year"),
+    y=alt.Y("AnnualCashFlow:Q", title=f"Annual Cash Flow ({currency_symbol})"),
+    color=alt.Color("Color:N", scale=None)
 )
-
-# Area verde (sopra zero)
-area_pos = alt.Chart(cf_df).mark_area(
-    color=ESAOTE_GREEN,
-    opacity=0.4
-).encode(
-    x="Year:O",
-    y="Positive:Q"
-)
-
-# Linea principale
-line = alt.Chart(cf_df).mark_line(
-    strokeWidth=4,
-    color="#222222"
-).encode(
-    x="Year:O",
-    y=alt.Y("CashFlow:Q", title=f"Cumulative Cash Flow ({currency_symbol})")
-)
-
-# Linea zero
-zero_line = alt.Chart(pd.DataFrame({"y":[0]})).mark_rule(
-    strokeDash=[5,5],
-    color="black"
-).encode(y="y:Q")
-
-# Marker break-even
-if break_even_year is not None:
-    be_point = alt.Chart(cf_df[cf_df["Year"] == break_even_year]).mark_circle(
-        size=200,
-        color="gold"
-    ).encode(
-        x="Year:O",
-        y="CashFlow:Q"
-    )
-    chart = area_neg + area_pos + line + zero_line + be_point
-else:
-    chart = area_neg + area_pos + line + zero_line
 
 st.altair_chart(
-    chart.properties(
-        height=500,
-        title="Esaote MRI – Time to Value"
+    bar_chart.properties(
+        height=400,
+        title="Esaote MRI – Annual Cash Flow"
     ),
     use_container_width=True
 )
-
-# Executive message
-if break_even_year:
-    st.success(f"Payback achieved in Year {break_even_year}")
-else:
-    st.warning("Payback not reached within selected horizon")
 
 # =============================
 # BREAK EVEN MESSAGE
