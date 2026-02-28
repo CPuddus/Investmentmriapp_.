@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import altair as alt
-import plotly.graph_objects as go
 
 # =============================
 # ESAOTE BRAND STYLE
@@ -158,98 +157,100 @@ line_chart = alt.Chart(df).transform_fold(
 st.altair_chart(line_chart.properties(height=400), use_container_width=True)
 
 # =============================
-# ANIMATED WATERFALL
+# SALES INTERNATIONAL – CASH FLOW CURVE
 # =============================
 
-st.markdown("## Investment Evolution – Animated Waterfall")
+st.markdown("## Investment Performance Overview")
 
-records = []
+# Cash flow cumulativo
+cashflow = []
+for y in range(0, years + 1):
+    if y == 0:
+        cashflow.append(-initial_investment)
+    else:
+        cumulative_profit = (annual_revenue * y) - (
+            initial_investment +
+            technology_reporting_cost * y +
+            electricity_cost * y +
+            maintenance_cost * y
+        )
+        cashflow.append(cumulative_profit)
 
-tech_cum = 0
-elec_cum = 0
-maint_cum = 0
-rev_cum = 0
+cf_df = pd.DataFrame({
+    "Year": range(0, years + 1),
+    "CashFlow": cashflow
+})
 
-for year in range(1, years + 1):
+# Break-even
+break_even_year = None
+for i in range(len(cf_df)):
+    if cf_df["CashFlow"].iloc[i] >= 0:
+        break_even_year = cf_df["Year"].iloc[i]
+        break
 
-    tech_cum += technology_reporting_cost
-    elec_cum += electricity_cost
-    maint_cum += maintenance_cost
-    rev_cum += annual_revenue
+# Area positiva / negativa
+cf_df["Positive"] = cf_df["CashFlow"].apply(lambda x: x if x > 0 else 0)
+cf_df["Negative"] = cf_df["CashFlow"].apply(lambda x: x if x < 0 else 0)
 
-    net_profit = rev_cum - (
-        initial_investment + tech_cum + elec_cum + maint_cum
-    )
-
-    records.append({
-        "Year": year,
-        "Initial Investment": -initial_investment,
-        "Revenue": rev_cum,
-        "Technology Cost": -tech_cum,
-        "Electricity Cost": -elec_cum,
-        "Maintenance Cost": -maint_cum,
-        "Net Profit": net_profit
-    })
-
-df_w = pd.DataFrame(records)
-
-fig = go.Figure()
-
-for year in df_w["Year"]:
-
-    row = df_w[df_w["Year"] == year].iloc[0]
-
-    fig.add_trace(go.Waterfall(
-        name=f"Year {year}",
-        orientation="v",
-        measure=["relative","relative","relative","relative","relative","total"],
-        x=[
-            "Initial Investment",
-            "Revenue",
-            "Technology Cost",
-            "Electricity Cost",
-            "Maintenance Cost",
-            "Net Profit"
-        ],
-        y=[
-            row["Initial Investment"],
-            row["Revenue"],
-            row["Technology Cost"],
-            row["Electricity Cost"],
-            row["Maintenance Cost"],
-            row["Net Profit"]
-        ],
-        increasing={"marker":{"color":ESAOTE_GREEN}},
-        decreasing={"marker":{"color":"red"}},
-        totals={"marker":{
-            "color":"gold" if break_even_year and year >= break_even_year else "#1f77b4"
-        }},
-        visible=(year == 1)
-    ))
-
-steps = []
-
-for i, year in enumerate(df_w["Year"]):
-    step = dict(
-        method="update",
-        args=[{"visible":[False]*len(fig.data)},
-              {"title":f"Esaote MRI Investment – Year {year}" +
-                       (" ✅ BREAK EVEN" if break_even_year and year >= break_even_year else "")}]
-    )
-    step["args"][0]["visible"][i] = True
-    steps.append(step)
-
-fig.update_layout(
-    sliders=[dict(
-        active=0,
-        currentvalue={"prefix":"Year: "},
-        steps=steps
-    )],
-    height=650,
-    showlegend=False
+# Area rossa (sotto zero)
+area_neg = alt.Chart(cf_df).mark_area(
+    color="#C44E52",
+    opacity=0.4
+).encode(
+    x="Year:O",
+    y="Negative:Q"
 )
 
-st.plotly_chart(fig, use_container_width=True)
+# Area verde (sopra zero)
+area_pos = alt.Chart(cf_df).mark_area(
+    color=ESAOTE_GREEN,
+    opacity=0.4
+).encode(
+    x="Year:O",
+    y="Positive:Q"
+)
+
+# Linea principale
+line = alt.Chart(cf_df).mark_line(
+    strokeWidth=4,
+    color="#222222"
+).encode(
+    x="Year:O",
+    y=alt.Y("CashFlow:Q", title=f"Cumulative Cash Flow ({currency_symbol})")
+)
+
+# Linea zero
+zero_line = alt.Chart(pd.DataFrame({"y":[0]})).mark_rule(
+    strokeDash=[5,5],
+    color="black"
+).encode(y="y:Q")
+
+# Marker break-even
+if break_even_year is not None:
+    be_point = alt.Chart(cf_df[cf_df["Year"] == break_even_year]).mark_circle(
+        size=200,
+        color="gold"
+    ).encode(
+        x="Year:O",
+        y="CashFlow:Q"
+    )
+    chart = area_neg + area_pos + line + zero_line + be_point
+else:
+    chart = area_neg + area_pos + line + zero_line
+
+st.altair_chart(
+    chart.properties(
+        height=500,
+        title="Esaote MRI – Time to Value"
+    ),
+    use_container_width=True
+)
+
+# Executive message
+if break_even_year:
+    st.success(f"Payback achieved in Year {break_even_year}")
+else:
+    st.warning("Payback not reached within selected horizon")
 
 # =============================
 # BREAK EVEN MESSAGE
