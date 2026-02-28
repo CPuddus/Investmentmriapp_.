@@ -157,18 +157,14 @@ line_chart = alt.Chart(df).transform_fold(
 st.altair_chart(line_chart.properties(height=400), use_container_width=True)
 
 # =============================
-# ANIMATED WATERFALL
-# =============================
-# =============================
-# WATERFALL ALTAIR – YEAR BY YEAR
+# EXECUTIVE MINIMAL WATERFALL – ALTAIR
 # =============================
 
-st.markdown("## Investment Evolution – Waterfall (Altair)")
+st.markdown("## Investment Breakdown")
 
-# Slider anno per simulare animazione
-selected_year = st.slider("Select Year", 1, years, 1)
+selected_year = st.slider("Year", 1, years, years)
 
-# Calcoli cumulativi fino all'anno selezionato
+# Calcoli cumulativi
 tech_cum = technology_reporting_cost * selected_year
 elec_cum = electricity_cost * selected_year
 maint_cum = maintenance_cost * selected_year
@@ -178,7 +174,7 @@ net_profit = rev_cum - (
     initial_investment + tech_cum + elec_cum + maint_cum
 )
 
-# Break-even check
+# Break-even
 break_even_year = None
 for y in range(1, years + 1):
     test_profit = (annual_revenue * y) - (
@@ -191,82 +187,75 @@ for y in range(1, years + 1):
         break_even_year = y
         break
 
-# Costruiamo dataframe waterfall
+# Data waterfall
 categories = [
-    "Initial Investment",
+    "Investment",
     "Revenue",
-    "Technology Cost",
-    "Electricity Cost",
-    "Maintenance Cost",
-    "Net Profit"
+    "Operating Costs",
+    "Net Result"
 ]
 
 values = [
     -initial_investment,
     rev_cum,
-    -tech_cum,
-    -elec_cum,
-    -maint_cum,
+    -(tech_cum + elec_cum + maint_cum),
     net_profit
 ]
 
-wf_df = pd.DataFrame({
+df_exec = pd.DataFrame({
     "Category": categories,
     "Value": values
 })
 
-# Calcolo cumulative per effetto waterfall
-wf_df["Cumulative"] = wf_df["Value"].cumsum()
-wf_df["Previous"] = wf_df["Cumulative"] - wf_df["Value"]
+df_exec["Cumulative"] = df_exec["Value"].cumsum()
+df_exec["Previous"] = df_exec["Cumulative"] - df_exec["Value"]
 
-# Colori dinamici
-def get_color(row):
-    if row["Category"] == "Net Profit":
+# Colori minimal
+def executive_color(row):
+    if row["Category"] == "Net Result":
         if break_even_year and selected_year >= break_even_year:
-            return "gold"
-        return "#1f77b4"
-    elif row["Value"] >= 0:
+            return ESAOTE_GREEN
+        return "#888888"
+    if row["Value"] > 0:
         return ESAOTE_GREEN
-    else:
-        return "red"
+    return "#C44E52"
 
-wf_df["Color"] = wf_df.apply(get_color, axis=1)
+df_exec["Color"] = df_exec.apply(executive_color, axis=1)
 
-# Grafico waterfall
-waterfall_chart = alt.Chart(wf_df).mark_bar().encode(
-    x=alt.X("Category:N", sort=None),
+# Barre
+bars = alt.Chart(df_exec).mark_bar(size=60).encode(
+    x=alt.X("Category:N", sort=None, title=None),
     y=alt.Y("Previous:Q", title=f"Value ({currency_symbol})"),
     y2="Cumulative:Q",
     color=alt.Color("Color:N", scale=None)
 )
 
-text = alt.Chart(wf_df).mark_text(
-    align='center',
-    baseline='middle',
-    dy=-10,
-    fontSize=12
+# Etichette sobrie
+labels = alt.Chart(df_exec).mark_text(
+    dy=-15,
+    fontSize=13,
+    fontWeight="bold"
 ).encode(
     x=alt.X("Category:N", sort=None),
     y="Cumulative:Q",
     text=alt.Text("Value:Q", format=",.0f")
 )
 
-final_chart = waterfall_chart + text
-
-st.altair_chart(
-    final_chart.properties(
-        height=500,
-        title=f"Esaote MRI – Year {selected_year}" +
-              (" ✅ BREAK EVEN REACHED" if break_even_year and selected_year >= break_even_year else "")
-    ),
-    use_container_width=True
+chart = (bars + labels).properties(
+    height=450,
+    title=f"Esaote MRI ROI – Year {selected_year}"
 )
 
-# Messaggio Break-even
+st.altair_chart(chart, use_container_width=True)
+
+# Messaggio executive
 if break_even_year:
-    st.success(f"🎯 Break-even achieved in Year {break_even_year}")
+    if selected_year >= break_even_year:
+        st.markdown(f"**Break-even achieved in Year {break_even_year}.**")
+    else:
+        st.markdown(f"Break-even expected in Year {break_even_year}.")
 else:
-    st.warning("Break-even not reached within selected period")
+    st.markdown("Break-even not reached within selected horizon.")
 
 # =============================
 # BREAK EVEN MESSAGE
