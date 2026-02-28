@@ -157,106 +157,100 @@ line_chart = alt.Chart(df).transform_fold(
 st.altair_chart(line_chart.properties(height=400), use_container_width=True)
 
 # =============================
-# EXECUTIVE MINIMAL WATERFALL – ALTAIR
+# ESALES INTERNATIONAL – CASH FLOW CURVE
 # =============================
 
-st.markdown("## Investment Breakdown")
+st.markdown("## Investment Performance Overview")
 
-selected_year = st.slider("Year", 1, years, years)
+# Cash flow cumulativo
+cashflow = []
+for y in range(0, years + 1):
+    if y == 0:
+        cashflow.append(-initial_investment)
+    else:
+        cumulative_profit = (annual_revenue * y) - (
+            initial_investment +
+            technology_reporting_cost * y +
+            electricity_cost * y +
+            maintenance_cost * y
+        )
+        cashflow.append(cumulative_profit)
 
-# Calcoli cumulativi
-tech_cum = technology_reporting_cost * selected_year
-elec_cum = electricity_cost * selected_year
-maint_cum = maintenance_cost * selected_year
-rev_cum = annual_revenue * selected_year
-
-net_profit = rev_cum - (
-    initial_investment + tech_cum + elec_cum + maint_cum
-)
+cf_df = pd.DataFrame({
+    "Year": range(0, years + 1),
+    "CashFlow": cashflow
+})
 
 # Break-even
 break_even_year = None
-for y in range(1, years + 1):
-    test_profit = (annual_revenue * y) - (
-        initial_investment +
-        technology_reporting_cost * y +
-        electricity_cost * y +
-        maintenance_cost * y
-    )
-    if test_profit >= 0:
-        break_even_year = y
+for i in range(len(cf_df)):
+    if cf_df["CashFlow"].iloc[i] >= 0:
+        break_even_year = cf_df["Year"].iloc[i]
         break
 
-# Data waterfall
-categories = [
-    "Investment",
-    "Revenue",
-    "Operating Costs",
-    "Net Result"
-]
+# Area positiva / negativa
+cf_df["Positive"] = cf_df["CashFlow"].apply(lambda x: x if x > 0 else 0)
+cf_df["Negative"] = cf_df["CashFlow"].apply(lambda x: x if x < 0 else 0)
 
-values = [
-    -initial_investment,
-    rev_cum,
-    -(tech_cum + elec_cum + maint_cum),
-    net_profit
-]
-
-df_exec = pd.DataFrame({
-    "Category": categories,
-    "Value": values
-})
-
-df_exec["Cumulative"] = df_exec["Value"].cumsum()
-df_exec["Previous"] = df_exec["Cumulative"] - df_exec["Value"]
-
-# Colori minimal
-def executive_color(row):
-    if row["Category"] == "Net Result":
-        if break_even_year and selected_year >= break_even_year:
-            return ESAOTE_GREEN
-        return "#888888"
-    if row["Value"] > 0:
-        return ESAOTE_GREEN
-    return "#C44E52"
-
-df_exec["Color"] = df_exec.apply(executive_color, axis=1)
-
-# Barre
-bars = alt.Chart(df_exec).mark_bar(size=60).encode(
-    x=alt.X("Category:N", sort=None, title=None),
-    y=alt.Y("Previous:Q", title=f"Value ({currency_symbol})"),
-    y2="Cumulative:Q",
-    color=alt.Color("Color:N", scale=None)
-)
-
-# Etichette sobrie
-labels = alt.Chart(df_exec).mark_text(
-    dy=-15,
-    fontSize=13,
-    fontWeight="bold"
+# Area rossa (sotto zero)
+area_neg = alt.Chart(cf_df).mark_area(
+    color="#C44E52",
+    opacity=0.4
 ).encode(
-    x=alt.X("Category:N", sort=None),
-    y="Cumulative:Q",
-    text=alt.Text("Value:Q", format=",.0f")
+    x="Year:O",
+    y="Negative:Q"
 )
 
-chart = (bars + labels).properties(
-    height=450,
-    title=f"Esaote MRI ROI – Year {selected_year}"
+# Area verde (sopra zero)
+area_pos = alt.Chart(cf_df).mark_area(
+    color=ESAOTE_GREEN,
+    opacity=0.4
+).encode(
+    x="Year:O",
+    y="Positive:Q"
 )
 
-st.altair_chart(chart, use_container_width=True)
+# Linea principale
+line = alt.Chart(cf_df).mark_line(
+    strokeWidth=4,
+    color="#222222"
+).encode(
+    x="Year:O",
+    y=alt.Y("CashFlow:Q", title=f"Cumulative Cash Flow ({currency_symbol})")
+)
 
-# Messaggio executive
-if break_even_year:
-    if selected_year >= break_even_year:
-        st.markdown(f"**Break-even achieved in Year {break_even_year}.**")
-    else:
-        st.markdown(f"Break-even expected in Year {break_even_year}.")
+# Linea zero
+zero_line = alt.Chart(pd.DataFrame({"y":[0]})).mark_rule(
+    strokeDash=[5,5],
+    color="black"
+).encode(y="y:Q")
+
+# Marker break-even
+if break_even_year is not None:
+    be_point = alt.Chart(cf_df[cf_df["Year"] == break_even_year]).mark_circle(
+        size=200,
+        color="gold"
+    ).encode(
+        x="Year:O",
+        y="CashFlow:Q"
+    )
+    chart = area_neg + area_pos + line + zero_line + be_point
 else:
-    st.markdown("Break-even not reached within selected horizon.")
+    chart = area_neg + area_pos + line + zero_line
 
+st.altair_chart(
+    chart.properties(
+        height=500,
+        title="Esaote MRI – Time to Value"
+    ),
+    use_container_width=True
+)
+
+# Executive message
+if break_even_year:
+    st.success(f"Payback achieved in Year {break_even_year}")
+else:
+    st.warning("Payback not reached within selected horizon")
 # =============================
 # BREAK EVEN MESSAGE
 # =============================
