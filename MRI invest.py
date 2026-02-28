@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import altair as alt
-import plotly.graph_objects as go
 
 # =============================
 # ESAOTE BRAND STYLE
@@ -160,96 +159,114 @@ st.altair_chart(line_chart.properties(height=400), use_container_width=True)
 # =============================
 # ANIMATED WATERFALL
 # =============================
+# =============================
+# WATERFALL ALTAIR – YEAR BY YEAR
+# =============================
 
-st.markdown("## Investment Evolution – Animated Waterfall")
+st.markdown("## Investment Evolution – Waterfall (Altair)")
 
-records = []
+# Slider anno per simulare animazione
+selected_year = st.slider("Select Year", 1, years, 1)
 
-tech_cum = 0
-elec_cum = 0
-maint_cum = 0
-rev_cum = 0
+# Calcoli cumulativi fino all'anno selezionato
+tech_cum = technology_reporting_cost * selected_year
+elec_cum = electricity_cost * selected_year
+maint_cum = maintenance_cost * selected_year
+rev_cum = annual_revenue * selected_year
 
-for year in range(1, years + 1):
-
-    tech_cum += technology_reporting_cost
-    elec_cum += electricity_cost
-    maint_cum += maintenance_cost
-    rev_cum += annual_revenue
-
-    net_profit = rev_cum - (
-        initial_investment + tech_cum + elec_cum + maint_cum
-    )
-
-    records.append({
-        "Year": year,
-        "Initial Investment": -initial_investment,
-        "Revenue": rev_cum,
-        "Technology Cost": -tech_cum,
-        "Electricity Cost": -elec_cum,
-        "Maintenance Cost": -maint_cum,
-        "Net Profit": net_profit
-    })
-
-df_w = pd.DataFrame(records)
-
-fig = go.Figure()
-
-for year in df_w["Year"]:
-
-    row = df_w[df_w["Year"] == year].iloc[0]
-
-    fig.add_trace(go.Waterfall(
-        name=f"Year {year}",
-        orientation="v",
-        measure=["relative","relative","relative","relative","relative","total"],
-        x=[
-            "Initial Investment",
-            "Revenue",
-            "Technology Cost",
-            "Electricity Cost",
-            "Maintenance Cost",
-            "Net Profit"
-        ],
-        y=[
-            row["Initial Investment"],
-            row["Revenue"],
-            row["Technology Cost"],
-            row["Electricity Cost"],
-            row["Maintenance Cost"],
-            row["Net Profit"]
-        ],
-        increasing={"marker":{"color":ESAOTE_GREEN}},
-        decreasing={"marker":{"color":"red"}},
-        totals={"marker":{
-            "color":"gold" if break_even_year and year >= break_even_year else "#1f77b4"
-        }},
-        visible=(year == 1)
-    ))
-
-steps = []
-
-for i, year in enumerate(df_w["Year"]):
-    step = dict(
-        method="update",
-        args=[{"visible":[False]*len(fig.data)},
-              {"title":f"Esaote MRI Investment – Year {year}" +
-                       (" ✅ BREAK EVEN" if break_even_year and year >= break_even_year else "")}]
-    )
-    step["args"][0]["visible"][i] = True
-    steps.append(step)
-
-fig.update_layout(
-    sliders=[dict(
-        active=0,
-        currentvalue={"prefix":"Year: "},
-        steps=steps
-    )],
-    height=650,
-    showlegend=False
+net_profit = rev_cum - (
+    initial_investment + tech_cum + elec_cum + maint_cum
 )
 
-st.plotly_chart(fig, use_container_width=True)
+# Break-even check
+break_even_year = None
+for y in range(1, years + 1):
+    test_profit = (annual_revenue * y) - (
+        initial_investment +
+        technology_reporting_cost * y +
+        electricity_cost * y +
+        maintenance_cost * y
+    )
+    if test_profit >= 0:
+        break_even_year = y
+        break
+
+# Costruiamo dataframe waterfall
+categories = [
+    "Initial Investment",
+    "Revenue",
+    "Technology Cost",
+    "Electricity Cost",
+    "Maintenance Cost",
+    "Net Profit"
+]
+
+values = [
+    -initial_investment,
+    rev_cum,
+    -tech_cum,
+    -elec_cum,
+    -maint_cum,
+    net_profit
+]
+
+wf_df = pd.DataFrame({
+    "Category": categories,
+    "Value": values
+})
+
+# Calcolo cumulative per effetto waterfall
+wf_df["Cumulative"] = wf_df["Value"].cumsum()
+wf_df["Previous"] = wf_df["Cumulative"] - wf_df["Value"]
+
+# Colori dinamici
+def get_color(row):
+    if row["Category"] == "Net Profit":
+        if break_even_year and selected_year >= break_even_year:
+            return "gold"
+        return "#1f77b4"
+    elif row["Value"] >= 0:
+        return ESAOTE_GREEN
+    else:
+        return "red"
+
+wf_df["Color"] = wf_df.apply(get_color, axis=1)
+
+# Grafico waterfall
+waterfall_chart = alt.Chart(wf_df).mark_bar().encode(
+    x=alt.X("Category:N", sort=None),
+    y=alt.Y("Previous:Q", title=f"Value ({currency_symbol})"),
+    y2="Cumulative:Q",
+    color=alt.Color("Color:N", scale=None)
+)
+
+text = alt.Chart(wf_df).mark_text(
+    align='center',
+    baseline='middle',
+    dy=-10,
+    fontSize=12
+).encode(
+    x=alt.X("Category:N", sort=None),
+    y="Cumulative:Q",
+    text=alt.Text("Value:Q", format=",.0f")
+)
+
+final_chart = waterfall_chart + text
+
+st.altair_chart(
+    final_chart.properties(
+        height=500,
+        title=f"Esaote MRI – Year {selected_year}" +
+              (" ✅ BREAK EVEN REACHED" if break_even_year and selected_year >= break_even_year else "")
+    ),
+    use_container_width=True
+)
+
+# Messaggio Break-even
+if break_even_year:
+    st.success(f"🎯 Break-even achieved in Year {break_even_year}")
+else:
+    st.warning("Break-even not reached within selected period")
 
 # =============================
 # BREAK EVEN MESSAGE
