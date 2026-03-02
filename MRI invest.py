@@ -66,7 +66,7 @@ electricity_cost = st.number_input("Electricity Cost (Yearly)", min_value=0, val
 maintenance_cost = st.number_input("Annual Service & Maintenance Cost", min_value=0, value=20000, step=5000)
 
 Totleas = initial_investment*Leasing/100
-Tot_int = initial_investment*Totleas/100
+Tot_int = Totleas*Interest/100
 Inty= Tot_int/years 
 
 # Conversione valuta
