@@ -60,7 +60,7 @@ st.markdown("#### Capital & Operational Costs")
 
 initial_investment = st.number_input("Initial Investment", min_value=0, value=500000, step=10000)
 Leasing = st.number_input("Percentage on leasing on initial investment %",  min_value=0, value=5, step=100)
-Interest = = st.number_input("Percentage of interest %",  min_value=0, value=5, step=100)
+Interest = st.number_input("Percentage of interest %",  min_value=0, value=5, step=100)
 technology_reporting_cost = st.number_input("Technology & Reporting Cost (Yearly)", min_value=0, value=50000, step=5000)
 electricity_cost = st.number_input("Electricity Cost (Yearly)", min_value=0, value=20000, step=2000)
 maintenance_cost = st.number_input("Annual Service & Maintenance Cost", min_value=0, value=20000, step=5000)
