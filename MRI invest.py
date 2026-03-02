@@ -105,6 +105,7 @@ for year in range(1, years + 1):
     elec_cum += electricity_cost
     maint_cum += maintenance_cost
     rev_cum += annual_revenue
+    int_cum += Inty
 
     total_exp = initial_investment + tech_cum + elec_cum + maint_cum + int_cum
 
