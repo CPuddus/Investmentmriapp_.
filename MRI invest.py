@@ -59,9 +59,15 @@ years = st.slider("Analysis Period (Years)", 1, 15, 10)
 st.markdown("#### Capital & Operational Costs")
 
 initial_investment = st.number_input("Initial Investment", min_value=0, value=500000, step=10000)
+Leasing = st.number_input("Percentage on leasing on initial investment %",  min_value=0, value=5, step=100)
+Interest = = st.number_input("Percentage of interest %",  min_value=0, value=5, step=100)
 technology_reporting_cost = st.number_input("Technology & Reporting Cost (Yearly)", min_value=0, value=50000, step=5000)
 electricity_cost = st.number_input("Electricity Cost (Yearly)", min_value=0, value=20000, step=2000)
 maintenance_cost = st.number_input("Annual Service & Maintenance Cost", min_value=0, value=20000, step=5000)
+
+Totleas = initial_investment/100*leasing
+Tot_int = initial_investment/100*Totleas
+Inty= Tot_int/years 
 
 # Conversione valuta
 initial_investment *= exchange_rate
@@ -88,6 +94,7 @@ annual_revenue = exams_per_day * average_price * working_days * exchange_rate
 expenses = [initial_investment]
 revenues = [0]
 
+int_cum=0
 tech_cum = 0
 elec_cum = 0
 maint_cum = 0
@@ -99,7 +106,7 @@ for year in range(1, years + 1):
     maint_cum += maintenance_cost
     rev_cum += annual_revenue
 
-    total_exp = initial_investment + tech_cum + elec_cum + maint_cum
+    total_exp = initial_investment + tech_cum + elec_cum + maint_cum + int_cum
 
     expenses.append(total_exp)
     revenues.append(rev_cum)
