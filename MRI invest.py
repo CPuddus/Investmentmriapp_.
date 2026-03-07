@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
 import tempfile
 
 # =============================
