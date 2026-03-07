@@ -187,59 +187,62 @@ line_chart = alt.Chart(df).transform_fold(
 st.altair_chart(line_chart.properties(height=400),use_container_width=True)
 
 # =============================
-# PAYBACK CURVE
+# PAYBACK CURVE (HISTOGRAM)
 # =============================
 
 st.markdown("## Payback Curve")
 
-cf_df=df.copy()
-cf_df["CashFlow"]=cf_df["Profit"]
+cf_df = df.copy()
+cf_df["CashFlow"] = cf_df["Profit"]
 
-area_chart=alt.Chart(cf_df).mark_area(
-    interpolate="monotone",
-    opacity=0.6
-).encode(
-    x="Year:O",
-    y="CashFlow:Q",
-    color=alt.condition(
-        alt.datum.CashFlow>=0,
-        alt.value(ESAOTE_GREEN),
-        alt.value("#E45756")
-    )
+# colore positivo/negativo
+cf_df["Color"] = cf_df["CashFlow"].apply(
+    lambda x: ESAOTE_GREEN if x >= 0 else "#E45756"
 )
 
-line_chart=alt.Chart(cf_df).mark_line(
-    color="black",
-    strokeWidth=3
-).encode(
-    x="Year:O",
-    y="CashFlow:Q"
+# istogramma
+bar_chart = alt.Chart(cf_df).mark_bar(size=40).encode(
+    x=alt.X("Year:O", title="Year"),
+    y=alt.Y("CashFlow:Q", title=f"Cumulative Cash Flow ({currency_symbol})"),
+    color=alt.Color("Color:N", scale=None)
 )
 
-zero_line=alt.Chart(pd.DataFrame({"y":[0]})).mark_rule(
+# linea zero
+zero_line = alt.Chart(
+    pd.DataFrame({"y":[0]})
+).mark_rule(
     strokeDash=[6,6],
     color="black"
-).encode(y="y:Q")
+).encode(
+    y="y:Q"
+)
 
+# marker break-even
 if break_even:
 
-    be_point=alt.Chart(
-        cf_df[cf_df["Year"]==break_even]
-    ).mark_point(
+    be_point = alt.Chart(
+        cf_df[cf_df["Year"] == break_even]
+    ).mark_circle(
         size=300,
-        color="gold",
-        filled=True
+        color="gold"
     ).encode(
         x="Year:O",
         y="CashFlow:Q"
     )
 
-    chart=area_chart+line_chart+zero_line+be_point
+    chart = bar_chart + zero_line + be_point
 
 else:
-    chart=area_chart+line_chart+zero_line
+    chart = bar_chart + zero_line
 
-st.altair_chart(chart.properties(height=500),use_container_width=True)
+
+st.altair_chart(
+    chart.properties(
+        height=500,
+        title="MRI Investment Payback"
+    ),
+    use_container_width=True
+)
 
 # =============================
 # BREAK EVEN MESSAGE
