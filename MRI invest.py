@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 import tempfile
+import io
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
 
 # =============================
 # BRAND STYLE
