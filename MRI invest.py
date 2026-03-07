@@ -184,7 +184,7 @@ for y in range(0, years + 1):
     else:
         cumulative_profit = (annual_revenue * y) - (
             initial_investment +
-            technology_reporting_cost * y +
+            technology_cost * y +
             electricity_cost * y +
             maintenance_cost * y
         )
