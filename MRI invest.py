@@ -106,7 +106,7 @@ rev_cum = 0
 rep_cum = 0
 
 for year in range(1, years + 1):
-    tech_cum += technology_reporting_cost
+    tech_cum += technology_cost
     elec_cum += electricity_cost
     maint_cum += maintenance_cost
     rev_cum += annual_revenue
