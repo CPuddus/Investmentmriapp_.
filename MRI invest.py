@@ -62,8 +62,8 @@ initial_investment = st.number_input("Initial Investment", min_value=0, value=50
 Leasing = st.number_input("Percentage on leasing on initial investment %",  min_value=0, value=80, step=5)
 Interest = st.number_input("Percentage of interest %",  min_value=0, value=5, step=5)
 Reporting_cost = st.number_input("Reporting cost (percentage) %",  min_value=0, value=5, step=5)
-technology_cost = st.number_input("Technology Cost (monhly)", min_value=0, value=50000, step=5000)*12
-electricity_cost = st.number_input("Electricity Cost (monthly)", min_value=0, value=20000, step=2000)*12
+technology_cost = st.number_input("Technology Cost (monhly)", min_value=0, value=2500, step=100)*12
+electricity_cost = st.number_input("Electricity Cost (monthly)", min_value=0, value=5000, step=1000)*12
 maintenance_cost = st.number_input("Annual Service & Maintenance Cost", min_value=0, value=20000, step=5000)
 
 Totleas = initial_investment*Leasing/100
