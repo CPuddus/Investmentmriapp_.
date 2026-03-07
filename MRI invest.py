@@ -87,7 +87,7 @@ exams_per_day = st.slider("Examinations per Day", 1, 25, 12)
 working_days = st.slider("Working Days per Year", 1, 365, 200)
 average_price = st.slider("Average Exam Price", 1, 1000, 200)
 
-Repcost=  exams_per_day * average_price * working_days * exchange_rate*Reporting_cost/100
+Repcost=  exams_per_day * average_price * working_days * exchange_rate * reporting_cost/100
 
 annual_revenue = exams_per_day * average_price * working_days * exchange_rate
 
