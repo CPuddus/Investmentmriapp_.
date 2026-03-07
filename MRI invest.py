@@ -61,7 +61,8 @@ st.markdown("#### Capital & Operational Costs")
 initial_investment = st.number_input("Initial Investment", min_value=0, value=500000, step=10000)
 Leasing = st.number_input("Percentage on leasing on initial investment %",  min_value=0, value=80, step=5)
 Interest = st.number_input("Percentage of interest %",  min_value=0, value=5, step=5)
-technology_reporting_cost = st.number_input("Technology & Reporting Cost (Yearly)", min_value=0, value=50000, step=5000)
+Reporting_cost = st.number_input("Percentage of exam cost %",  min_value=0, value=5, step=5)
+technology_cost = st.number_input("Radiologist Cost (Yearly)", min_value=0, value=50000, step=5000)
 electricity_cost = st.number_input("Electricity Cost (Yearly)", min_value=0, value=20000, step=2000)
 maintenance_cost = st.number_input("Annual Service & Maintenance Cost", min_value=0, value=20000, step=5000)
 
@@ -71,9 +72,10 @@ Inty= Tot_int/years
 
 # Conversione valuta
 initial_investment *= exchange_rate
-technology_reporting_cost *= exchange_rate
+technology_cost *= exchange_rate
 electricity_cost *= exchange_rate
 maintenance_cost *= exchange_rate
+reporting_cost *= exchange_rate
 
 # =============================
 # REVENUE SECTION
@@ -84,6 +86,8 @@ st.markdown("#### Revenue Assumptions")
 exams_per_day = st.slider("Examinations per Day", 1, 25, 12)
 working_days = st.slider("Working Days per Year", 1, 365, 200)
 average_price = st.slider("Average Exam Price", 1, 1000, 200)
+
+Repcost=  exams_per_day * average_price * working_days * exchange_rate*Reporting_cost/100
 
 annual_revenue = exams_per_day * average_price * working_days * exchange_rate
 
@@ -99,6 +103,7 @@ tech_cum = 0
 elec_cum = 0
 maint_cum = 0
 rev_cum = 0
+rep_cum = 0
 
 for year in range(1, years + 1):
     tech_cum += technology_reporting_cost
@@ -106,8 +111,10 @@ for year in range(1, years + 1):
     maint_cum += maintenance_cost
     rev_cum += annual_revenue
     int_cum += Inty
+    rep_cum += Repcost
 
-    total_exp = initial_investment + tech_cum + elec_cum + maint_cum + int_cum
+
+    total_exp = initial_investment + tech_cum + elec_cum + maint_cum + int_cum + rep_cum
 
     expenses.append(total_exp)
     revenues.append(rev_cum)
