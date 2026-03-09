@@ -381,11 +381,22 @@ def create_pdf():
     c.setFillColor(HexColor("#666666"))
     c.drawString(50,50,"Generated with Esaote MRI ROI Simulator")
 
-    c.save()
+       c.save()
 
     return file.name
-    
-    if st.button("Export PDF Report"): 
-        pdf_file=create_pdf()  
-        with open(pdf_file,"rb") as f: 
-            st.download_button( "Download Report",f, file_name="MRI_ROI_Report.pdf" )
+
+
+# =============================
+# PDF DOWNLOAD BUTTON
+# =============================
+
+if st.button("Export PDF Report"):
+
+    pdf_file = create_pdf()
+
+    with open(pdf_file, "rb") as f:
+        st.download_button(
+            "Download Report",
+            f,
+            file_name="MRI_ROI_Report.pdf"
+        )
