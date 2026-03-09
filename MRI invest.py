@@ -359,31 +359,31 @@ logo_path=tempfile.NamedTemporaryFile(
 
 img.save(logo_path)
 
-    pdf_file=tempfile.NamedTemporaryFile(
+pdf_file=tempfile.NamedTemporaryFile(
         delete=False,
         suffix=".pdf"
     )
 
-    c=canvas.Canvas(pdf_file.name,pagesize=A4)
+c=canvas.Canvas(pdf_file.name,pagesize=A4)
 
-    c.drawImage(logo_path,40,770,width=120,height=40)
+c.drawImage(logo_path,40,770,width=120,height=40)
 
-    c.setFont("Helvetica-Bold",20)
-    c.drawString(180,780,"MRI ROI Financial Report")
+c.setFont("Helvetica-Bold",20)
+c.drawString(180,780,"MRI ROI Financial Report")
 
-    c.setFont("Helvetica",11)
+c.setFont("Helvetica",11)
 
-    c.drawString(
+c.drawString(
         50,720,
         f"Total Revenue: {currency_symbol}{df['Revenues'].iloc[-1]:,.0f}"
     )
 
-    c.drawString(
+c.drawString(
         50,700,
         f"Net Profit: {currency_symbol}{final_profit:,.0f}"
     )
 
-    c.drawString(
+c.drawString(
         50,680,
         f"ROI: {roi:.1f}%"
     )
