@@ -67,7 +67,7 @@ interest_pct = st.slider("Interest %",0,15,5)
 
 st.markdown("### Operating Costs")
 
-technology_cost = st.number_input("Technology Cost Monthly",0,10000,2500,100)*12
+technology_cost = st.number_input("Radiology Cost Monthly",0,10000,2500,100)*12
 electricity_cost = st.number_input("Electricity Monthly",0,20000,5000,1000)*12
 maintenance_cost = st.number_input("Annual Maintenance",0,100000,20000,5000)
 reporting_pct = st.slider("Reporting Cost %",0,20,5)
