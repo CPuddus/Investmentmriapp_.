@@ -145,8 +145,6 @@ def calculate_financials():
     })
 
     df["Profit"] = df["Revenues"] - df["Expenses"]
-    df["CumulativeProfit"] = df["Profit"].cumsum()
-
     return df
 
 df = calculate_financials()
@@ -159,9 +157,8 @@ roi=(final_profit/initial_investment)*100 if initial_investment>0 else 0
 
 break_even=None
 for i in range(len(df)):
-    if df["CumulativeProfit"].iloc[i]>=0:
+    if df["Profit"].iloc[i]>=0:
         break_even=df["Year"].iloc[i]
-        break
         break
 
 st.markdown("## Financial Overview")
@@ -191,26 +188,26 @@ line_chart = alt.Chart(df).transform_fold(
 st.altair_chart(line_chart,use_container_width=True)
 
 # =============================
-# ALTAIR CHART: Cumulative Profit
+# ALTAIR CHART: Profit Annuale
 # =============================
-st.markdown("### Cumulative Profit Histogram")
+st.markdown("### Annual Profit Histogram")
 
-cumulative_chart = alt.Chart(df).mark_bar().encode(
+profit_chart = alt.Chart(df).mark_bar().encode(
     x=alt.X("Year:O", title="Year"),
-    y=alt.Y("CumulativeProfit:Q", title=f"Cumulative Profit ({currency_symbol})"),
+    y=alt.Y("Profit:Q", title=f"Profit ({currency_symbol})"),
     color=alt.condition(
-        alt.datum.CumulativeProfit >= 0,
+        alt.datum.Profit >= 0,
         alt.value(ESAOTE_GREEN),
         alt.value("red")
     ),
-    tooltip=["Year","CumulativeProfit"]
+    tooltip=["Year","Profit"]
 )
 
 zero_line = alt.Chart(pd.DataFrame({"y":[0]})).mark_rule(
     color="black"
 ).encode(y="y:Q")
 
-chart = cumulative_chart + zero_line
+chart = profit_chart + zero_line
 
 if break_even:
     breakeven_line = alt.Chart(pd.DataFrame({"Year":[break_even]})).mark_rule(
@@ -225,33 +222,33 @@ st.altair_chart(chart, use_container_width=True)
 # =============================
 def create_pdf():
     # =============================
-    # CREATE PAYBACK CHART
+    # CREATE PROFIT CHART
     # =============================
     chart_path = tempfile.NamedTemporaryFile(delete=False, suffix=".png").name
 
     plt.figure(figsize=(9,5))
     years_plot = df["Year"].values
-    cumprofit_plot = df["CumulativeProfit"].values
+    profit_plot = df["Profit"].values
 
     plt.fill_between(
         years_plot,
-        cumprofit_plot,
+        profit_plot,
         0,
-        where=(cumprofit_plot <= 0),
+        where=(profit_plot <= 0),
         color="red",
         alpha=0.3
     )
 
     plt.fill_between(
         years_plot,
-        cumprofit_plot,
+        profit_plot,
         0,
-        where=(cumprofit_plot >= 0),
+        where=(profit_plot >= 0),
         color="green",
         alpha=0.3
     )
 
-    plt.plot(years_plot, cumprofit_plot, linewidth=3, color=ESAOTE_GREEN)
+    plt.plot(years_plot, profit_plot, linewidth=3, color=ESAOTE_GREEN)
     plt.axhline(0, color="black")
 
     if break_even:
@@ -260,8 +257,8 @@ def create_pdf():
         plt.text(break_even, 0, f" Break-even Y{break_even}", fontsize=11, fontweight="bold")
 
     plt.xlabel("Year")
-    plt.ylabel(f"Cumulative Profit ({currency_symbol})")
-    plt.title("MRI Investment Cumulative Profit")
+    plt.ylabel(f"Profit ({currency_symbol})")
+    plt.title("MRI Annual Profit")
     plt.grid(True)
     plt.tight_layout()
     plt.savefig(chart_path, dpi=300)
@@ -297,14 +294,13 @@ def create_pdf():
     c.drawImage(chart_path, 40, 380, width=520, height=260)
 
     # Table
-    table_data = [["Year","Revenue","Expenses","Profit","Cumulative Profit"]]
+    table_data = [["Year","Revenue","Expenses","Profit"]]
     for _, row in df.iterrows():
         table_data.append([
             int(row["Year"]),
             f"{currency_symbol}{row['Revenues']:,.0f}",
             f"{currency_symbol}{row['Expenses']:,.0f}",
-            f"{currency_symbol}{row['Profit']:,.0f}",
-            f"{currency_symbol}{row['CumulativeProfit']:,.0f}"
+            f"{currency_symbol}{row['Profit']:,.0f}"
         ])
 
     table = Table(table_data)
