@@ -219,27 +219,52 @@ line_chart = alt.Chart(df).transform_fold(
 st.altair_chart(line_chart,use_container_width=True)
 
 # =============================
-# PAYBACK CHART
+# Breakeven CHART
 # =============================
 
-st.markdown("## Payback Curve")
+st.markdown("## Brekeven Histogram")
 
-cf_df=df.copy()
-cf_df["CashFlow"]=cf_df["Profit"]
+payback_df = df.copy()
+payback_df["Cumulative"] = payback_df["Profit"]
 
-bar_chart = alt.Chart(cf_df).mark_bar(size=40).encode(
-    x="Year:O",
-    y=alt.Y("CashFlow:Q",
-    title=f"Cumulative Cash Flow ({currency_symbol})")
+payback_chart = alt.Chart(payback_df).mark_line(
+    strokeWidth=4
+).encode(
+    x=alt.X("Year:O", title="Year"),
+    y=alt.Y(
+        "Cumulative:Q",
+        title=f"Cumulative Cash Flow ({currency_symbol})"
+    ),
+    color=alt.condition(
+        alt.datum.Cumulative >= 0,
+        alt.value("green"),
+        alt.value("red")
+    )
 )
 
-st.altair_chart(bar_chart,use_container_width=True)
+zero_line = alt.Chart(pd.DataFrame({"y":[0]})).mark_rule(
+    color="black"
+).encode(y="y:Q")
+
+chart = payback_chart + zero_line
 
 if break_even:
-    st.success(f"Payback achieved in Year {break_even}")
-else:
-    st.warning("Payback not reached")
+    breakeven_df = pd.DataFrame({
+        "Year":[break_even],
+        "Value":[0]
+    })
 
+    point = alt.Chart(breakeven_df).mark_point(
+        size=200,
+        color="blue"
+    ).encode(
+        x="Year:O",
+        y="Value:Q"
+    )
+
+    chart = chart + point
+
+st.altair_chart(chart,use_container_width=True)
 # =============================
 # PDF EXPORT
 # =============================
@@ -254,31 +279,72 @@ def create_pdf():
 
     plt.figure(figsize=(8,4))
 
-    plt.plot(
-        df["Year"],
-        df["Revenues"],
-        linewidth=3,
-        label="Revenue",
-        color=ESAOTE_GREEN
+plt.figure(figsize=(9,5))
+
+years_plot = df["Year"].values
+profit_plot = df["Profit"].values
+
+# area rossa (negativa)
+plt.fill_between(
+    years_plot,
+    profit_plot,
+    0,
+    where=(profit_plot <= 0),
+    color="red",
+    alpha=0.3
+)
+
+# area verde (positiva)
+plt.fill_between(
+    years_plot,
+    profit_plot,
+    0,
+    where=(profit_plot >= 0),
+    color="green",
+    alpha=0.3
+)
+
+plt.plot(
+    years_plot,
+    profit_plot,
+    linewidth=3,
+    color=ESAOTE_GREEN
+)
+
+plt.axhline(0,color="black")
+
+# evidenzia break-even
+if break_even:
+
+    plt.scatter(
+        break_even,
+        0,
+        color="blue",
+        s=120
     )
 
-    plt.plot(
-        df["Year"],
-        df["Expenses"],
-        linewidth=3,
-        label="Expenses",
-        color="red"
+    plt.axvline(
+        break_even,
+        linestyle="--",
+        color="blue"
     )
 
-    plt.xlabel("Year")
-    plt.ylabel(f"Value ({currency_symbol})")
-    plt.title("MRI Revenue vs Expenses")
-    plt.legend()
-    plt.grid(True)
+    plt.text(
+        break_even,
+        0,
+        f" Break-even Y{break_even}",
+        fontsize=11,
+        fontweight="bold"
+    )
 
-    plt.tight_layout()
-    plt.savefig(chart_path)
-    plt.close()
+plt.xlabel("Year")
+plt.ylabel(f"Cumulative Cash Flow ({currency_symbol})")
+plt.title("MRI Investment Payback Curve")
+plt.grid(True)
+
+plt.tight_layout()
+plt.savefig(chart_path,dpi=300)
+plt.close()
 
     # logo download
     logo_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s"
