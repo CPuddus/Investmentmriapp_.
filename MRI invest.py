@@ -381,7 +381,7 @@ def create_pdf():
     c.setFillColor(HexColor("#666666"))
     c.drawString(50,50,"Generated with Esaote MRI ROI Simulator")
 
-       c.save()
+    c.save()
 
     return file.name
 
