@@ -271,140 +271,143 @@ st.altair_chart(chart,use_container_width=True)
 
 def create_pdf():
 
-    # Matplotlib chart
-    chart_path = tempfile.NamedTemporaryFile(
-        delete=False,
-        suffix=".png"
-    ).name
+    # =============================
+    # CREATE PAYBACK CHART
+    # =============================
 
-    plt.figure(figsize=(8,4))
+    chart_path = tempfile.NamedTemporaryFile(delete=False, suffix=".png").name
 
-plt.figure(figsize=(9,5))
+    plt.figure(figsize=(9,5))
 
-years_plot = df["Year"].values
-profit_plot = df["Profit"].values
+    years_plot = df["Year"].values
+    profit_plot = df["Profit"].values
 
-# area rossa (negativa)
-plt.fill_between(
-    years_plot,
-    profit_plot,
-    0,
-    where=(profit_plot <= 0),
-    color="red",
-    alpha=0.3
-)
-
-# area verde (positiva)
-plt.fill_between(
-    years_plot,
-    profit_plot,
-    0,
-    where=(profit_plot >= 0),
-    color="green",
-    alpha=0.3
-)
-
-plt.plot(
-    years_plot,
-    profit_plot,
-    linewidth=3,
-    color=ESAOTE_GREEN
-)
-
-plt.axhline(0,color="black")
-
-# evidenzia break-even
-if break_even:
-
-    plt.scatter(
-        break_even,
+    # area rossa (negativa)
+    plt.fill_between(
+        years_plot,
+        profit_plot,
         0,
-        color="blue",
-        s=120
+        where=(profit_plot <= 0),
+        color="red",
+        alpha=0.3
     )
 
-    plt.axvline(
-        break_even,
-        linestyle="--",
-        color="blue"
-    )
-
-    plt.text(
-        break_even,
+    # area verde (positiva)
+    plt.fill_between(
+        years_plot,
+        profit_plot,
         0,
-        f" Break-even Y{break_even}",
-        fontsize=11,
-        fontweight="bold"
+        where=(profit_plot >= 0),
+        color="green",
+        alpha=0.3
     )
 
-plt.xlabel("Year")
-plt.ylabel(f"Cumulative Cash Flow ({currency_symbol})")
-plt.title("MRI Investment Payback Curve")
-plt.grid(True)
-
-plt.tight_layout()
-plt.savefig(chart_path,dpi=300)
-plt.close()
-
-# logo download
-logo_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s"
-
-response=requests.get(logo_url)
-img=Image.open(BytesIO(response.content))
-
-logo_path=tempfile.NamedTemporaryFile(
-        delete=False,
-        suffix=".png"
-    ).name
-
-img.save(logo_path)
-
-pdf_file=tempfile.NamedTemporaryFile(
-        delete=False,
-        suffix=".pdf"
+    plt.plot(
+        years_plot,
+        profit_plot,
+        linewidth=3,
+        color=ESAOTE_GREEN
     )
 
-c=canvas.Canvas(pdf_file.name,pagesize=A4)
+    plt.axhline(0, color="black")
 
-c.drawImage(logo_path,40,770,width=120,height=40)
+    # break-even highlight
+    if break_even:
 
-c.setFont("Helvetica-Bold",20)
-c.drawString(180,780,"MRI ROI Financial Report")
+        plt.scatter(
+            break_even,
+            0,
+            color="blue",
+            s=120
+        )
 
-c.setFont("Helvetica",11)
+        plt.axvline(
+            break_even,
+            linestyle="--",
+            color="blue"
+        )
 
-c.drawString(
+        plt.text(
+            break_even,
+            0,
+            f" Break-even Y{break_even}",
+            fontsize=11,
+            fontweight="bold"
+        )
+
+    plt.xlabel("Year")
+    plt.ylabel(f"Cumulative Cash Flow ({currency_symbol})")
+    plt.title("MRI Investment Payback Curve")
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.savefig(chart_path, dpi=300)
+    plt.close()
+
+    # =============================
+    # DOWNLOAD LOGO
+    # =============================
+
+    logo_url = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s"
+
+    response = requests.get(logo_url)
+    img = Image.open(BytesIO(response.content))
+
+    logo_path = tempfile.NamedTemporaryFile(delete=False, suffix=".png").name
+    img.save(logo_path)
+
+    # =============================
+    # CREATE PDF
+    # =============================
+
+    pdf_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+
+    c = canvas.Canvas(pdf_file.name, pagesize=A4)
+
+    c.drawImage(logo_path, 40, 770, width=120, height=40)
+
+    c.setFont("Helvetica-Bold", 20)
+    c.drawString(180, 780, "MRI ROI Financial Report")
+
+    c.setFont("Helvetica", 11)
+
+    c.drawString(
         50,720,
         f"Total Revenue: {currency_symbol}{df['Revenues'].iloc[-1]:,.0f}"
     )
 
-c.drawString(
+    c.drawString(
         50,700,
         f"Net Profit: {currency_symbol}{final_profit:,.0f}"
     )
 
-c.drawString(
+    c.drawString(
         50,680,
         f"ROI: {roi:.1f}%"
     )
 
-if break_even:
+    if break_even:
         c.drawString(
             50,660,
             f"Payback Year: {break_even}"
         )
 
-        c.drawImage(
-           chart_path,
-           40,
-           380,
-           width=520,
-           height=260
+    # chart
+    c.drawImage(
+        chart_path,
+        40,
+        380,
+        width=520,
+        height=260
     )
 
-table_data=[["Year","Revenue","Expenses","Profit"]]
+    # =============================
+    # TABLE
+    # =============================
 
-for _,row in df.iterrows():
+    table_data = [["Year","Revenue","Expenses","Profit"]]
+
+    for _,row in df.iterrows():
         table_data.append([
             int(row["Year"]),
             f"{currency_symbol}{row['Revenues']:,.0f}",
@@ -412,17 +415,17 @@ for _,row in df.iterrows():
             f"{currency_symbol}{row['Profit']:,.0f}"
         ])
 
-table=Table(table_data)
+    table = Table(table_data)
 
-table.setStyle(TableStyle([
+    table.setStyle(TableStyle([
         ("BACKGROUND",(0,0),(-1,0),HexColor(ESAOTE_GREEN)),
         ("TEXTCOLOR",(0,0),(-1,0),"white"),
         ("GRID",(0,0),(-1,-1),0.5,"grey"),
         ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold")
     ]))
 
-table.wrapOn(c,400,200)
-table.drawOn(c,60,150)
+    table.wrapOn(c,400,200)
+    table.drawOn(c,60,150)
 
     c.save()
 
