@@ -346,18 +346,18 @@ plt.tight_layout()
 plt.savefig(chart_path,dpi=300)
 plt.close()
 
-    # logo download
-    logo_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s"
+# logo download
+logo_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s"
 
-    response=requests.get(logo_url)
-    img=Image.open(BytesIO(response.content))
+response=requests.get(logo_url)
+img=Image.open(BytesIO(response.content))
 
-    logo_path=tempfile.NamedTemporaryFile(
+logo_path=tempfile.NamedTemporaryFile(
         delete=False,
         suffix=".png"
     ).name
 
-    img.save(logo_path)
+img.save(logo_path)
 
     pdf_file=tempfile.NamedTemporaryFile(
         delete=False,
