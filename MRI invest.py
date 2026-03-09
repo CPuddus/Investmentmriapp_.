@@ -402,9 +402,9 @@ if break_even:
            height=260
     )
 
-    table_data=[["Year","Revenue","Expenses","Profit"]]
+table_data=[["Year","Revenue","Expenses","Profit"]]
 
-    for _,row in df.iterrows():
+for _,row in df.iterrows():
         table_data.append([
             int(row["Year"]),
             f"{currency_symbol}{row['Revenues']:,.0f}",
@@ -412,17 +412,17 @@ if break_even:
             f"{currency_symbol}{row['Profit']:,.0f}"
         ])
 
-    table=Table(table_data)
+table=Table(table_data)
 
-    table.setStyle(TableStyle([
+table.setStyle(TableStyle([
         ("BACKGROUND",(0,0),(-1,0),HexColor(ESAOTE_GREEN)),
         ("TEXTCOLOR",(0,0),(-1,0),"white"),
         ("GRID",(0,0),(-1,-1),0.5,"grey"),
         ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold")
     ]))
 
-    table.wrapOn(c,400,200)
-    table.drawOn(c,60,150)
+table.wrapOn(c,400,200)
+table.drawOn(c,60,150)
 
     c.save()
 
