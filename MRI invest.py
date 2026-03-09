@@ -60,7 +60,6 @@ initial_investment = st.number_input("Initial Investment",0,2000000,500000,10000
 
 leasing_pct = st.slider("Leasing %",0,100,80)
 interest_pct = st.slider("Interest %",0,15,5)
-reporting_pct = st.slider("Reporting Cost %",0,20,5)
 
 # =============================
 # OPERATING COSTS
@@ -71,6 +70,7 @@ st.markdown("### Operating Costs")
 technology_cost = st.number_input("Technology Cost Monthly",0,10000,2500,100)*12
 electricity_cost = st.number_input("Electricity Monthly",0,20000,5000,1000)*12
 maintenance_cost = st.number_input("Annual Maintenance",0,100000,20000,5000)
+reporting_pct = st.slider("Reporting Cost %",0,20,5)
 
 # =============================
 # REVENUE
@@ -81,7 +81,6 @@ st.markdown("### Revenue")
 exams_per_day = st.slider("Exams per Day",1,30,12)
 working_days = st.slider("Working Days per Year",1,365,200)
 average_price = st.slider("Average Exam Price",1,1000,200)
-
 annual_revenue = exams_per_day * working_days * average_price
 reporting_cost = annual_revenue * reporting_pct/100
 
