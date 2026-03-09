@@ -5,6 +5,10 @@ import tempfile
 import io
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
+from reportlab.lib.units import cm
+from reportlab.lib.colors import HexColor
+from reportlab.platypus import Table, TableStyle
+import os
 
 # =============================
 # BRAND STYLE
@@ -261,40 +265,122 @@ else:
 
 def create_pdf():
 
-    file=tempfile.NamedTemporaryFile(delete=False,suffix=".pdf")
-    c=canvas.Canvas(file.name,pagesize=A4)
+    # =============================
+    # SAVE CHART IMAGE
+    # =============================
 
-    c.setFont("Helvetica-Bold",16)
-    c.drawString(50,800,"Esaote MRI ROI Report")
+    chart = alt.Chart(df).transform_fold(
+        ["Expenses","Revenues"],
+        as_=["Category","Value"]
+    ).mark_line(strokeWidth=5).encode(
+        x=alt.X("Year:O", title="Year"),
+        y=alt.Y("Value:Q", title=f"Value ({currency_symbol})"),
+        color=alt.Color(
+            "Category:N",
+            scale=alt.Scale(
+                domain=["Expenses","Revenues"],
+                range=["#E45756", ESAOTE_GREEN]
+            ),
+            legend=alt.Legend(title="")
+        )
+    ).properties(
+        width=700,
+        height=400
+    )
 
-    c.setFont("Helvetica",12)
+    chart_path = tempfile.NamedTemporaryFile(delete=False, suffix=".png").name
+    chart.save(chart_path)
 
-    c.drawString(50,760,f"Total Revenue: {currency_symbol}{df['Revenues'].iloc[-1]:,.0f}")
-    c.drawString(50,740,f"Net Profit: {currency_symbol}{final_profit:,.0f}")
-    c.drawString(50,720,f"ROI: {roi:.1f}%")
+    # =============================
+    # CREATE PDF
+    # =============================
+
+    file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+    c = canvas.Canvas(file.name, pagesize=A4)
+
+    # =============================
+    # LOGO
+    # =============================
+
+    logo_url = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s"
+    logo_path = tempfile.NamedTemporaryFile(delete=False, suffix=".png").name
+
+    import requests
+    from PIL import Image
+    from io import BytesIO
+
+    response = requests.get(logo_url)
+    img = Image.open(BytesIO(response.content))
+    img.save(logo_path)
+
+    c.drawImage(logo_path,40,770,width=120,height=40)
+
+    # =============================
+    # TITLE
+    # =============================
+
+    c.setFont("Helvetica-Bold",20)
+    c.drawString(180,780,"MRI ROI Financial Report")
+
+    # =============================
+    # KPI SECTION
+    # =============================
+
+    c.setFont("Helvetica-Bold",12)
+    c.drawString(50,720,"Financial Overview")
+
+    c.setFont("Helvetica",11)
+
+    c.drawString(50,700,f"Total Revenue: {currency_symbol}{df['Revenues'].iloc[-1]:,.0f}")
+    c.drawString(50,685,f"Net Profit: {currency_symbol}{final_profit:,.0f}")
+    c.drawString(50,670,f"ROI: {roi:.1f}%")
 
     if break_even:
-        c.drawString(50,700,f"Payback Year: {break_even}")
+        c.drawString(50,655,f"Payback Year: {break_even}")
     else:
-        c.drawString(50,700,"Payback not reached")
+        c.drawString(50,655,"Payback not reached")
 
-    c.drawString(50,660,"Operational Assumptions")
+    # =============================
+    # ADD CHART
+    # =============================
 
-    c.drawString(50,640,f"Exams per Day: {exams_per_day}")
-    c.drawString(50,620,f"Working Days: {working_days}")
-    c.drawString(50,600,f"Average Price: {currency_symbol}{average_price}")
+    c.drawImage(chart_path,40,360,width=520,height=260)
+
+    # =============================
+    # TABLE DATA
+    # =============================
+
+    table_data=[["Year","Revenue","Expenses","Profit"]]
+
+    for i,row in df.iterrows():
+        table_data.append([
+            int(row["Year"]),
+            f"{currency_symbol}{row['Revenues']:,.0f}",
+            f"{currency_symbol}{row['Expenses']:,.0f}",
+            f"{currency_symbol}{row['Profit']:,.0f}"
+        ])
+
+    table=Table(table_data,colWidths=[60,120,120,120])
+
+    table.setStyle(TableStyle([
+        ("BACKGROUND",(0,0),(-1,0),HexColor(ESAOTE_GREEN)),
+        ("TEXTCOLOR",(0,0),(-1,0),"white"),
+        ("GRID",(0,0),(-1,-1),0.5,"grey"),
+        ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold"),
+        ("ALIGN",(1,1),(-1,-1),"RIGHT")
+    ]))
+
+    table.wrapOn(c,400,200)
+    table.drawOn(c,60,120)
+
+    # =============================
+    # FOOTER
+    # =============================
+
+    c.setFont("Helvetica",9)
+    c.setFillColor(HexColor("#666666"))
+    c.drawString(50,50,"Generated with Esaote MRI ROI Simulator")
 
     c.save()
 
     return file.name
-
-if st.button("Export PDF Report"):
-
-    pdf_file=create_pdf()
-
-    with open(pdf_file,"rb") as f:
-        st.download_button(
-            "Download Report",
-            f,
-            file_name="MRI_ROI_Report.pdf"
-        )
