@@ -388,18 +388,18 @@ c.drawString(
         f"ROI: {roi:.1f}%"
     )
 
-    if break_even:
+if break_even:
         c.drawString(
             50,660,
             f"Payback Year: {break_even}"
         )
 
-    c.drawImage(
-        chart_path,
-        40,
-        380,
-        width=520,
-        height=260
+        c.drawImage(
+           chart_path,
+           40,
+           380,
+           width=520,
+           height=260
     )
 
     table_data=[["Year","Revenue","Expenses","Profit"]]
