@@ -384,3 +384,8 @@ def create_pdf():
     c.save()
 
     return file.name
+    
+    if st.button("Export PDF Report"): 
+        pdf_file=create_pdf()  
+        with open(pdf_file,"rb") as f: 
+            st.download_button( "Download Report",f, file_name="MRI_ROI_Report.pdf" )
