@@ -17,7 +17,6 @@ ESAOTE_GREEN = "#6CC24A"
 # =============================
 # HEADER
 # =============================
-
 col1, col2 = st.columns([1,5])
 
 with col1:
@@ -35,7 +34,6 @@ with col2:
 # =============================
 # CURRENCY
 # =============================
-
 st.markdown("### Currency")
 
 currency_options = {
@@ -53,7 +51,6 @@ currency_symbol = currency_options[selected_currency]["symbol"]
 # =============================
 # INVESTMENT
 # =============================
-
 st.markdown("### Investment")
 
 years = st.slider("Analysis Period (Years)",1,15,10)
@@ -69,7 +66,6 @@ interest_pct = st.slider("Interest %",0,15,5)
 # =============================
 # OPERATING COSTS
 # =============================
-
 st.markdown("### Operating Costs")
 
 technology_cost = st.number_input(
@@ -92,7 +88,6 @@ reporting_pct = st.slider("Reporting Cost %",0,20,5)
 # =============================
 # REVENUE
 # =============================
-
 st.markdown("### Revenue")
 
 exams_per_day = st.slider("Exams per Day",1,30,12)
@@ -105,7 +100,6 @@ reporting_cost = annual_revenue * reporting_pct/100
 # =============================
 # CURRENCY CONVERSION
 # =============================
-
 initial_investment *= exchange_rate
 annual_revenue *= exchange_rate
 technology_cost *= exchange_rate
@@ -116,7 +110,6 @@ reporting_cost *= exchange_rate
 # =============================
 # LEASING
 # =============================
-
 leasing_amount = initial_investment * leasing_pct/100
 total_interest = leasing_amount * interest_pct/100
 annual_interest = total_interest / years
@@ -124,9 +117,7 @@ annual_interest = total_interest / years
 # =============================
 # FINANCIAL MODEL
 # =============================
-
 def calculate_financials():
-
     expenses=[initial_investment]
     revenues=[0]
 
@@ -134,7 +125,6 @@ def calculate_financials():
     cumulative_rev=0
 
     for y in range(1,years+1):
-
         yearly_cost=(
             technology_cost+
             electricity_cost+
@@ -142,7 +132,6 @@ def calculate_financials():
             annual_interest+
             reporting_cost
         )
-
         cumulative_cost+=yearly_cost
         cumulative_rev+=annual_revenue
 
@@ -155,52 +144,36 @@ def calculate_financials():
         "Revenues":revenues
     })
 
-    df["Profit"]=df["Revenues"]-df["Expenses"]
+    df["Profit"] = df["Revenues"] - df["Expenses"]
+    df["CumulativeProfit"] = df["Profit"].cumsum()
 
     return df
 
-df=calculate_financials()
+df = calculate_financials()
 
 # =============================
 # KPI
 # =============================
-
 final_profit=df["Profit"].iloc[-1]
-
 roi=(final_profit/initial_investment)*100 if initial_investment>0 else 0
 
 break_even=None
-
 for i in range(len(df)):
-    if df["Profit"].iloc[i]>=0:
+    if df["CumulativeProfit"].iloc[i]>=0:
         break_even=df["Year"].iloc[i]
+        break
         break
 
 st.markdown("## Financial Overview")
-
 c1,c2,c3=st.columns(3)
-
-c1.metric(
-    "Total Revenue",
-    f"{currency_symbol}{df['Revenues'].iloc[-1]:,.0f}"
-)
-
-c2.metric(
-    "Net Profit",
-    f"{currency_symbol}{final_profit:,.0f}"
-)
-
-c3.metric(
-    "ROI",
-    f"{roi:.1f}%"
-)
+c1.metric("Total Revenue", f"{currency_symbol}{df['Revenues'].iloc[-1]:,.0f}")
+c2.metric("Net Profit", f"{currency_symbol}{final_profit:,.0f}")
+c3.metric("ROI", f"{roi:.1f}%")
 
 # =============================
-# ALTAIR CHART
+# ALTAIR CHART: Revenue vs Expenses
 # =============================
-
 st.markdown("### Revenue vs Expenses")
-
 line_chart = alt.Chart(df).transform_fold(
     ["Expenses","Revenues"],
     as_=["Category","Value"]
@@ -215,14 +188,12 @@ line_chart = alt.Chart(df).transform_fold(
         )
     )
 )
-
 st.altair_chart(line_chart,use_container_width=True)
 
 # =============================
-# Breakeven CHART
+# ALTAIR CHART: Cumulative Profit
 # =============================
-
-st.markdown("## Cumulative Profit per Year")
+st.markdown("### Cumulative Profit Histogram")
 
 cumulative_chart = alt.Chart(df).mark_bar().encode(
     x=alt.X("Year:O", title="Year"),
@@ -235,14 +206,12 @@ cumulative_chart = alt.Chart(df).mark_bar().encode(
     tooltip=["Year","CumulativeProfit"]
 )
 
-# Linea dello zero
 zero_line = alt.Chart(pd.DataFrame({"y":[0]})).mark_rule(
     color="black"
 ).encode(y="y:Q")
 
 chart = cumulative_chart + zero_line
 
-# Evidenziare break-even se presente
 if break_even:
     breakeven_line = alt.Chart(pd.DataFrame({"Year":[break_even]})).mark_rule(
         color="blue", strokeDash=[6,4]
@@ -250,81 +219,50 @@ if break_even:
     chart = chart + breakeven_line
 
 st.altair_chart(chart, use_container_width=True)
+
 # =============================
 # PDF EXPORT
 # =============================
-
 def create_pdf():
-
     # =============================
     # CREATE PAYBACK CHART
     # =============================
-
     chart_path = tempfile.NamedTemporaryFile(delete=False, suffix=".png").name
 
     plt.figure(figsize=(9,5))
-
     years_plot = df["Year"].values
-    profit_plot = df["Profit"].values
+    cumprofit_plot = df["CumulativeProfit"].values
 
-    # area rossa (negativa)
     plt.fill_between(
         years_plot,
-        profit_plot,
+        cumprofit_plot,
         0,
-        where=(profit_plot <= 0),
+        where=(cumprofit_plot <= 0),
         color="red",
         alpha=0.3
     )
 
-    # area verde (positiva)
     plt.fill_between(
         years_plot,
-        profit_plot,
+        cumprofit_plot,
         0,
-        where=(profit_plot >= 0),
+        where=(cumprofit_plot >= 0),
         color="green",
         alpha=0.3
     )
 
-    plt.plot(
-        years_plot,
-        profit_plot,
-        linewidth=3,
-        color=ESAOTE_GREEN
-    )
-
+    plt.plot(years_plot, cumprofit_plot, linewidth=3, color=ESAOTE_GREEN)
     plt.axhline(0, color="black")
 
-    # break-even highlight
     if break_even:
-
-        plt.scatter(
-            break_even,
-            0,
-            color="blue",
-            s=120
-        )
-
-        plt.axvline(
-            break_even,
-            linestyle="--",
-            color="blue"
-        )
-
-        plt.text(
-            break_even,
-            0,
-            f" Break-even Y{break_even}",
-            fontsize=11,
-            fontweight="bold"
-        )
+        plt.scatter(break_even, 0, color="blue", s=120)
+        plt.axvline(break_even, linestyle="--", color="blue")
+        plt.text(break_even, 0, f" Break-even Y{break_even}", fontsize=11, fontweight="bold")
 
     plt.xlabel("Year")
-    plt.ylabel(f"Cumulative Cash Flow ({currency_symbol})")
-    plt.title("MRI Investment Payback Curve")
+    plt.ylabel(f"Cumulative Profit ({currency_symbol})")
+    plt.title("MRI Investment Cumulative Profit")
     plt.grid(True)
-
     plt.tight_layout()
     plt.savefig(chart_path, dpi=300)
     plt.close()
@@ -332,100 +270,62 @@ def create_pdf():
     # =============================
     # DOWNLOAD LOGO
     # =============================
-
     logo_url = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s"
-
     response = requests.get(logo_url)
     img = Image.open(BytesIO(response.content))
-
     logo_path = tempfile.NamedTemporaryFile(delete=False, suffix=".png").name
     img.save(logo_path)
 
     # =============================
     # CREATE PDF
     # =============================
-
     pdf_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
-
     c = canvas.Canvas(pdf_file.name, pagesize=A4)
 
     c.drawImage(logo_path, 40, 770, width=120, height=40)
-
     c.setFont("Helvetica-Bold", 20)
     c.drawString(180, 780, "MRI ROI Financial Report")
-
     c.setFont("Helvetica", 11)
 
-    c.drawString(
-        50,720,
-        f"Total Revenue: {currency_symbol}{df['Revenues'].iloc[-1]:,.0f}"
-    )
-
-    c.drawString(
-        50,700,
-        f"Net Profit: {currency_symbol}{final_profit:,.0f}"
-    )
-
-    c.drawString(
-        50,680,
-        f"ROI: {roi:.1f}%"
-    )
-
+    c.drawString(50,720, f"Total Revenue: {currency_symbol}{df['Revenues'].iloc[-1]:,.0f}")
+    c.drawString(50,700, f"Net Profit: {currency_symbol}{final_profit:,.0f}")
+    c.drawString(50,680, f"ROI: {roi:.1f}%")
     if break_even:
-        c.drawString(
-            50,660,
-            f"Payback Year: {break_even}"
-        )
+        c.drawString(50,660, f"Payback Year: {break_even}")
 
-    # chart
-    c.drawImage(
-        chart_path,
-        40,
-        380,
-        width=520,
-        height=260
-    )
+    # Chart
+    c.drawImage(chart_path, 40, 380, width=520, height=260)
 
-    # =============================
-    # TABLE
-    # =============================
-
-    table_data = [["Year","Revenue","Expenses","Profit"]]
-
-    for _,row in df.iterrows():
+    # Table
+    table_data = [["Year","Revenue","Expenses","Profit","Cumulative Profit"]]
+    for _, row in df.iterrows():
         table_data.append([
             int(row["Year"]),
             f"{currency_symbol}{row['Revenues']:,.0f}",
             f"{currency_symbol}{row['Expenses']:,.0f}",
-            f"{currency_symbol}{row['Profit']:,.0f}"
+            f"{currency_symbol}{row['Profit']:,.0f}",
+            f"{currency_symbol}{row['CumulativeProfit']:,.0f}"
         ])
 
     table = Table(table_data)
-
     table.setStyle(TableStyle([
         ("BACKGROUND",(0,0),(-1,0),HexColor(ESAOTE_GREEN)),
         ("TEXTCOLOR",(0,0),(-1,0),"white"),
         ("GRID",(0,0),(-1,-1),0.5,"grey"),
         ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold")
     ]))
-
     table.wrapOn(c,400,200)
     table.drawOn(c,60,150)
 
     c.save()
-
     return pdf_file.name
 
 # =============================
 # DOWNLOAD
 # =============================
-
 if st.button("Export PDF Report"):
-
     pdf_file=create_pdf()
-
     with open(pdf_file,"rb") as f:
-
         st.download_button(
             "Download Report",
             data=f,
