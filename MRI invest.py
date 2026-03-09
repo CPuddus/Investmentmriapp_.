@@ -222,49 +222,34 @@ st.altair_chart(line_chart,use_container_width=True)
 # Breakeven CHART
 # =============================
 
-st.markdown("## Brekeven Histogram")
+st.markdown("## Cumulative Profit per Year")
 
-payback_df = df.copy()
-payback_df["Cumulative"] = payback_df["Profit"]
-
-payback_chart = alt.Chart(payback_df).mark_line(
-    strokeWidth=4
-).encode(
+cumulative_chart = alt.Chart(df).mark_bar().encode(
     x=alt.X("Year:O", title="Year"),
-    y=alt.Y(
-        "Cumulative:Q",
-        title=f"Cumulative Cash Flow ({currency_symbol})"
-    ),
+    y=alt.Y("CumulativeProfit:Q", title=f"Cumulative Profit ({currency_symbol})"),
     color=alt.condition(
-        alt.datum.Cumulative >= 0,
-        alt.value("green"),
+        alt.datum.CumulativeProfit >= 0,
+        alt.value(ESAOTE_GREEN),
         alt.value("red")
-    )
+    ),
+    tooltip=["Year","CumulativeProfit"]
 )
 
+# Linea dello zero
 zero_line = alt.Chart(pd.DataFrame({"y":[0]})).mark_rule(
     color="black"
 ).encode(y="y:Q")
 
-chart = payback_chart + zero_line
+chart = cumulative_chart + zero_line
 
+# Evidenziare break-even se presente
 if break_even:
-    breakeven_df = pd.DataFrame({
-        "Year":[break_even],
-        "Value":[0]
-    })
+    breakeven_line = alt.Chart(pd.DataFrame({"Year":[break_even]})).mark_rule(
+        color="blue", strokeDash=[6,4]
+    ).encode(x="Year:O")
+    chart = chart + breakeven_line
 
-    point = alt.Chart(breakeven_df).mark_point(
-        size=200,
-        color="blue"
-    ).encode(
-        x="Year:O",
-        y="Value:Q"
-    )
-
-    chart = chart + point
-
-st.altair_chart(chart,use_container_width=True)
+st.altair_chart(chart, use_container_width=True)
 # =============================
 # PDF EXPORT
 # =============================
