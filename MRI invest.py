@@ -5,15 +5,12 @@ import tempfile
 import requests
 from io import BytesIO
 from PIL import Image
+import matplotlib.pyplot as plt
 
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.colors import HexColor
 from reportlab.platypus import Table, TableStyle
-
-# =============================
-# BRAND STYLE
-# =============================
 
 ESAOTE_GREEN = "#6CC24A"
 
@@ -26,12 +23,12 @@ col1, col2 = st.columns([1,5])
 with col1:
     st.image(
         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s",
-        width=160
+        width=150
     )
 
 with col2:
     st.markdown(
-        "<h1 style='margin-bottom:0;'>Esaote MRI – ROI Simulator</h1>",
+        "<h1>Esaote MRI – ROI Simulator</h1>",
         unsafe_allow_html=True
     )
 
@@ -60,7 +57,12 @@ currency_symbol = currency_options[selected_currency]["symbol"]
 st.markdown("### Investment")
 
 years = st.slider("Analysis Period (Years)",1,15,10)
-initial_investment = st.number_input("Initial Investment",0,2000000,500000,10000)
+
+initial_investment = st.number_input(
+    "Initial Investment",
+    0,2000000,500000,10000
+)
+
 leasing_pct = st.slider("Leasing %",0,100,80)
 interest_pct = st.slider("Interest %",0,15,5)
 
@@ -70,9 +72,21 @@ interest_pct = st.slider("Interest %",0,15,5)
 
 st.markdown("### Operating Costs")
 
-technology_cost = st.number_input("Radiology Cost Monthly",0,10000,2500,100)*12
-electricity_cost = st.number_input("Electricity Monthly",0,20000,5000,1000)*12
-maintenance_cost = st.number_input("Annual Maintenance",0,100000,20000,5000)
+technology_cost = st.number_input(
+    "Radiology Cost Monthly",
+    0,10000,2500,100
+)*12
+
+electricity_cost = st.number_input(
+    "Electricity Monthly",
+    0,20000,5000,1000
+)*12
+
+maintenance_cost = st.number_input(
+    "Annual Maintenance",
+    0,100000,20000,5000
+)
+
 reporting_pct = st.slider("Reporting Cost %",0,20,5)
 
 # =============================
@@ -152,9 +166,11 @@ df=calculate_financials()
 # =============================
 
 final_profit=df["Profit"].iloc[-1]
+
 roi=(final_profit/initial_investment)*100 if initial_investment>0 else 0
 
 break_even=None
+
 for i in range(len(df)):
     if df["Profit"].iloc[i]>=0:
         break_even=df["Year"].iloc[i]
@@ -164,12 +180,23 @@ st.markdown("## Financial Overview")
 
 c1,c2,c3=st.columns(3)
 
-c1.metric("Total Revenue",f"{currency_symbol}{df['Revenues'].iloc[-1]:,.0f}")
-c2.metric("Net Profit",f"{currency_symbol}{final_profit:,.0f}")
-c3.metric("ROI",f"{roi:.1f}%")
+c1.metric(
+    "Total Revenue",
+    f"{currency_symbol}{df['Revenues'].iloc[-1]:,.0f}"
+)
+
+c2.metric(
+    "Net Profit",
+    f"{currency_symbol}{final_profit:,.0f}"
+)
+
+c3.metric(
+    "ROI",
+    f"{roi:.1f}%"
+)
 
 # =============================
-# CHART
+# ALTAIR CHART
 # =============================
 
 st.markdown("### Revenue vs Expenses")
@@ -199,19 +226,14 @@ st.markdown("## Payback Curve")
 
 cf_df=df.copy()
 cf_df["CashFlow"]=cf_df["Profit"]
-cf_df["Color"]=cf_df["CashFlow"].apply(lambda x: ESAOTE_GREEN if x>=0 else "#E45756")
 
-bar_chart=alt.Chart(cf_df).mark_bar(size=40).encode(
+bar_chart = alt.Chart(cf_df).mark_bar(size=40).encode(
     x="Year:O",
-    y=alt.Y("CashFlow:Q",title=f"Cumulative Cash Flow ({currency_symbol})"),
-    color=alt.Color("Color:N",scale=None)
+    y=alt.Y("CashFlow:Q",
+    title=f"Cumulative Cash Flow ({currency_symbol})")
 )
 
 st.altair_chart(bar_chart,use_container_width=True)
-
-# =============================
-# PAYBACK MESSAGE
-# =============================
 
 if break_even:
     st.success(f"Payback achieved in Year {break_even}")
@@ -224,17 +246,57 @@ else:
 
 def create_pdf():
 
-    chart_path=tempfile.NamedTemporaryFile(delete=False,suffix=".png").name
-    line_chart.save(chart_path)
+    # Matplotlib chart
+    chart_path = tempfile.NamedTemporaryFile(
+        delete=False,
+        suffix=".png"
+    ).name
 
+    plt.figure(figsize=(8,4))
+
+    plt.plot(
+        df["Year"],
+        df["Revenues"],
+        linewidth=3,
+        label="Revenue",
+        color=ESAOTE_GREEN
+    )
+
+    plt.plot(
+        df["Year"],
+        df["Expenses"],
+        linewidth=3,
+        label="Expenses",
+        color="red"
+    )
+
+    plt.xlabel("Year")
+    plt.ylabel(f"Value ({currency_symbol})")
+    plt.title("MRI Revenue vs Expenses")
+    plt.legend()
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.savefig(chart_path)
+    plt.close()
+
+    # logo download
     logo_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s"
-    logo_path=tempfile.NamedTemporaryFile(delete=False,suffix=".png").name
 
     response=requests.get(logo_url)
     img=Image.open(BytesIO(response.content))
+
+    logo_path=tempfile.NamedTemporaryFile(
+        delete=False,
+        suffix=".png"
+    ).name
+
     img.save(logo_path)
 
-    pdf_file=tempfile.NamedTemporaryFile(delete=False,suffix=".pdf")
+    pdf_file=tempfile.NamedTemporaryFile(
+        delete=False,
+        suffix=".pdf"
+    )
 
     c=canvas.Canvas(pdf_file.name,pagesize=A4)
 
@@ -244,14 +306,35 @@ def create_pdf():
     c.drawString(180,780,"MRI ROI Financial Report")
 
     c.setFont("Helvetica",11)
-    c.drawString(50,720,f"Total Revenue: {currency_symbol}{df['Revenues'].iloc[-1]:,.0f}")
-    c.drawString(50,700,f"Net Profit: {currency_symbol}{final_profit:,.0f}")
-    c.drawString(50,680,f"ROI: {roi:.1f}%")
+
+    c.drawString(
+        50,720,
+        f"Total Revenue: {currency_symbol}{df['Revenues'].iloc[-1]:,.0f}"
+    )
+
+    c.drawString(
+        50,700,
+        f"Net Profit: {currency_symbol}{final_profit:,.0f}"
+    )
+
+    c.drawString(
+        50,680,
+        f"ROI: {roi:.1f}%"
+    )
 
     if break_even:
-        c.drawString(50,660,f"Payback Year: {break_even}")
+        c.drawString(
+            50,660,
+            f"Payback Year: {break_even}"
+        )
 
-    c.drawImage(chart_path,40,380,width=520,height=260)
+    c.drawImage(
+        chart_path,
+        40,
+        380,
+        width=520,
+        height=260
+    )
 
     table_data=[["Year","Revenue","Expenses","Profit"]]
 
@@ -288,6 +371,7 @@ if st.button("Export PDF Report"):
     pdf_file=create_pdf()
 
     with open(pdf_file,"rb") as f:
+
         st.download_button(
             "Download Report",
             data=f,
