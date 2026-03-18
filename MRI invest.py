@@ -387,8 +387,18 @@ def create_pdf(df, final_profit, roi, monthly_payment, leas_month, annual_revenu
 # DOWNLOAD
 # =============================
 if st.button("Export PDF Report"):
-    pdf_file=create_pdf()
-    with open(pdf_file,"rb") as f:
+    pdf_file = create_pdf(
+        df=df,
+        final_profit=final_profit,
+        roi=roi,
+        monthly_payment=monthly_payment,
+        leas_month=leas_month,
+        annual_revenue=annual_revenue,
+        break_even=break_even,
+        currency_symbol=currency_symbol
+    )
+    
+    with open(pdf_file, "rb") as f:
         st.download_button(
             "Download Report",
             data=f,
