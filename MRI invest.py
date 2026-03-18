@@ -262,8 +262,21 @@ def create_pdf():
     chart_path = tempfile.NamedTemporaryFile(delete=False, suffix=".png").name
 
     plt.figure(figsize=(9,5))
-    plt.plot(df["Year"], df["Profit"], linewidth=3)
+    years_plot = df["Year"].values
+    profit_plot = df["Profit"].values
+
+    plt.bar(years_plot, profit_plot)
+
     plt.axhline(0)
+
+# evidenzia positivo/negativo (senza colori espliciti forti)
+for i, v in enumerate(profit_plot):
+    if v < 0:
+        plt.bar(years_plot[i], v)
+
+if break_even:
+    plt.axvline(break_even, linestyle="--")
+    plt.text(break_even, 0, f" BE Y{break_even}")
 
     if break_even:
         plt.axvline(break_even, linestyle="--")
@@ -387,12 +400,6 @@ def create_pdf():
     c.drawString(50, 720, f"Base Revenue: {format_number(annual_revenue)}")
     c.drawString(50, 700, f"Best Case (+20%): {format_number(best_revenue)}")
     c.drawString(50, 680, f"Worst Case (-20%): {format_number(worst_revenue)}")
-
-    c.drawString(50, 640, "Insights:")
-    c.setFont("Helvetica-Oblique", 11)
-    c.drawString(60, 620, "- MRI profitability is highly volume-driven")
-    c.drawString(60, 600, "- Leasing enables faster break-even vs upfront investment")
-    c.drawString(60, 580, "- Optimization of utilization is key to ROI")
 
     # footer page 2
     c.setFont("Helvetica-Oblique", 9)
