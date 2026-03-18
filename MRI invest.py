@@ -61,6 +61,7 @@ initial_investment = st.number_input(
 )
 
 leasing_pct = st.slider("Leasing %",0,100,80)
+leas_month = st.slider("Leasing Period (Months)",0,60,120)
 interest_pct = st.slider("Interest %",0,15,5)
 
 # =============================
@@ -69,7 +70,7 @@ interest_pct = st.slider("Interest %",0,15,5)
 st.markdown("### Operating Costs")
 
 technology_cost = st.number_input(
-    "Radiology Cost Monthly",
+    "Human Resources Cost Monthly",
     0,10000,2500,100
 )*12
 
@@ -111,7 +112,7 @@ reporting_cost *= exchange_rate
 # LEASING
 # =============================
 leasing_amount = initial_investment * leasing_pct/100
-total_interest = leasing_amount * interest_pct/100
+total_interest = leasing_amount * interest_pct* leas_month/100
 annual_interest = total_interest / years
 
 # =============================
