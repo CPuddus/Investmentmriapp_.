@@ -245,52 +245,40 @@ st.altair_chart(chart, use_container_width=True)
 # =============================
 # PDF EXPORT
 # =============================
+def format_number(value):
+    if abs(value) >= 1_000_000:
+        return f"{currency_symbol}{value/1_000_000:.1f}M"
+    elif abs(value) >= 1_000:
+        return f"{currency_symbol}{value/1_000:.0f}K"
+    else:
+        return f"{currency_symbol}{value:,.0f}"
+
+
 def create_pdf():
+
     # =============================
     # CREATE PROFIT CHART
     # =============================
     chart_path = tempfile.NamedTemporaryFile(delete=False, suffix=".png").name
 
     plt.figure(figsize=(9,5))
-    years_plot = df["Year"].values
-    profit_plot = df["Profit"].values
-
-    plt.fill_between(
-        years_plot,
-        profit_plot,
-        0,
-        where=(profit_plot <= 0),
-        color="red",
-        alpha=0.3
-    )
-
-    plt.fill_between(
-        years_plot,
-        profit_plot,
-        0,
-        where=(profit_plot >= 0),
-        color="green",
-        alpha=0.3
-    )
-
-    plt.plot(years_plot, profit_plot, linewidth=3, color=ESAOTE_GREEN)
-    plt.axhline(0, color="black")
+    plt.plot(df["Year"], df["Profit"], linewidth=3)
+    plt.axhline(0)
 
     if break_even:
-        plt.scatter(break_even, 0, color="blue", s=120)
-        plt.axvline(break_even, linestyle="--", color="blue")
-        plt.text(break_even, 0, f" Break-even Y{break_even}", fontsize=11, fontweight="bold")
+        plt.axvline(break_even, linestyle="--")
+        plt.text(break_even, 0, f"Break-even Y{break_even}")
 
+    plt.title("Profit Evolution")
     plt.xlabel("Year")
-    plt.ylabel(f"Profit ({currency_symbol})")
-    plt.title("MRI Annual Profit")
+    plt.ylabel("Profit")
     plt.grid(True)
     plt.tight_layout()
     plt.savefig(chart_path, dpi=300)
     plt.close()
 
     # =============================
-    # DOWNLOAD LOGO
+    # LOGO
     # =============================
     logo_url = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s"
     response = requests.get(logo_url)
@@ -299,46 +287,121 @@ def create_pdf():
     img.save(logo_path)
 
     # =============================
-    # CREATE PDF
+    # PDF INIT
     # =============================
     pdf_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
     c = canvas.Canvas(pdf_file.name, pagesize=A4)
 
+    # =============================
+    # HEADER
+    # =============================
     c.drawImage(logo_path, 40, 770, width=120, height=40)
     c.setFont("Helvetica-Bold", 20)
     c.drawString(180, 780, "MRI ROI Financial Report")
+
+    # =============================
+    # KPI BOX
+    # =============================
+    c.setFillColor(HexColor(ESAOTE_GREEN))
+    c.rect(40, 690, 520, 60, fill=1)
+
+    c.setFillColor("white")
+    c.setFont("Helvetica-Bold", 13)
+    c.drawString(60, 720, f"Revenue: {format_number(df['Revenues'].iloc[-1])}")
+    c.drawString(240, 720, f"Profit: {format_number(final_profit)}")
+    c.drawString(420, 720, f"ROI: {roi:.1f}%")
+
+    # =============================
+    # LEASING INFO
+    # =============================
+    c.setFillColor("black")
     c.setFont("Helvetica", 11)
 
-    c.drawString(50,720, f"Total Revenue: {currency_symbol}{df['Revenues'].iloc[-1]:,.0f}")
-    c.drawString(50,700, f"Net Profit: {currency_symbol}{final_profit:,.0f}")
-    c.drawString(50,680, f"ROI: {roi:.1f}%")
+    c.drawString(50, 660, f"Monthly Leasing: {format_number(monthly_payment)}")
+    c.drawString(50, 640, f"Leasing Duration: {leas_month} months")
+    c.drawString(50, 620, f"Total Leasing Paid: {format_number(monthly_payment * leas_month)}")
+
+    # =============================
+    # BREAK EVEN HIGHLIGHT
+    # =============================
     if break_even:
-        c.drawString(50,660, f"Payback Year: {break_even}")
+        c.setFillColor(HexColor("#E8F5E9"))
+        c.rect(40, 590, 520, 25, fill=1)
+        c.setFillColor("black")
+        c.drawString(50, 598, f"Break-even reached in Year {break_even}")
 
-    # Chart
-    c.drawImage(chart_path, 40, 380, width=520, height=260)
+    # =============================
+    # CHART
+    # =============================
+    c.drawImage(chart_path, 40, 320, width=520, height=250)
 
-    # Table
+    # =============================
+    # TABLE
+    # =============================
     table_data = [["Year","Revenue","Expenses","Profit"]]
+
     for _, row in df.iterrows():
         table_data.append([
             int(row["Year"]),
-            f"{currency_symbol}{row['Revenues']:,.0f}",
-            f"{currency_symbol}{row['Expenses']:,.0f}",
-            f"{currency_symbol}{row['Profit']:,.0f}"
+            format_number(row["Revenues"]),
+            format_number(row["Expenses"]),
+            format_number(row["Profit"])
         ])
 
     table = Table(table_data)
+
     table.setStyle(TableStyle([
         ("BACKGROUND",(0,0),(-1,0),HexColor(ESAOTE_GREEN)),
         ("TEXTCOLOR",(0,0),(-1,0),"white"),
-        ("GRID",(0,0),(-1,-1),0.5,"grey"),
-        ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold")
+        ("ALIGN",(0,0),(-1,-1),"CENTER"),
+        ("GRID",(0,0),(-1,-1),0.25,"grey"),
+        ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold"),
+        ("BOTTOMPADDING",(0,0),(-1,0),10),
     ]))
+
     table.wrapOn(c,400,200)
-    table.drawOn(c,60,150)
+    table.drawOn(c,60,120)
+
+    # =============================
+    # FOOTER
+    # =============================
+    c.setFont("Helvetica-Oblique", 9)
+    c.setFillColor("grey")
+    c.drawString(40, 30, "Confidential – MRI ROI Simulation")
+    c.drawRightString(550, 30, "Generated by ROI Simulator")
+
+    # =============================
+    # PAGE 2 – SCENARIOS
+    # =============================
+    c.showPage()
+
+    c.setFont("Helvetica-Bold", 18)
+    c.drawString(40, 780, "Scenario Analysis")
+
+    # simple scenarios
+    best_revenue = annual_revenue * 1.2
+    worst_revenue = annual_revenue * 0.8
+
+    c.setFont("Helvetica", 12)
+
+    c.drawString(50, 720, f"Base Revenue: {format_number(annual_revenue)}")
+    c.drawString(50, 700, f"Best Case (+20%): {format_number(best_revenue)}")
+    c.drawString(50, 680, f"Worst Case (-20%): {format_number(worst_revenue)}")
+
+    c.drawString(50, 640, "Insights:")
+    c.setFont("Helvetica-Oblique", 11)
+    c.drawString(60, 620, "- MRI profitability is highly volume-driven")
+    c.drawString(60, 600, "- Leasing enables faster break-even vs upfront investment")
+    c.drawString(60, 580, "- Optimization of utilization is key to ROI")
+
+    # footer page 2
+    c.setFont("Helvetica-Oblique", 9)
+    c.setFillColor("grey")
+    c.drawString(40, 30, "Confidential – MRI ROI Simulation")
+    c.drawRightString(550, 30, "Page 2")
 
     c.save()
+
     return pdf_file.name
 
 # =============================
