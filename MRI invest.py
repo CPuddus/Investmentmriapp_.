@@ -60,7 +60,9 @@ initial_investment = st.number_input(
     0,2000000,500000,10000
 )
 
-leasing_pct = st.slider("Leasing %",0,100,80)
+st.markdown("### Leasing")
+
+leasing_pct = st.slider("Leasing % of initial investiemnts",0,100,80)
 leas_month = st.slider("Leasing Period (Months)", 12, 120, 60)
 interest_pct = st.slider("Interest %",0,15,5)
 
