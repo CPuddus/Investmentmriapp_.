@@ -146,7 +146,7 @@ def calculate_financials():
 
     for y in range(1,years+1):
 
-        if y <= leasing_years:
+        if y <= int(leasing_years):
            leasing_cost = annual_leasing_payment
         else:
            leasing_cost = 0
@@ -154,7 +154,7 @@ def calculate_financials():
             technology_cost+
             electricity_cost+
             maintenance_cost+
-            annual_interest+
+            leasing_cost+
             reporting_cost
         )
         cumulative_cost+=yearly_cost
