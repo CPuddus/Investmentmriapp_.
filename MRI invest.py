@@ -61,7 +61,7 @@ initial_investment = st.number_input(
 )
 
 leasing_pct = st.slider("Leasing %",0,100,80)
-leas_month = st.slider("Leasing Period (Months)",0,60,120)
+leas_month = st.slider("Leasing Period (Months)", 12, 120, 60)
 interest_pct = st.slider("Interest %",0,15,5)
 
 # =============================
@@ -111,9 +111,26 @@ reporting_cost *= exchange_rate
 # =============================
 # LEASING
 # =============================
-leasing_amount = initial_investment * leasing_pct/100
-total_interest = leasing_amount * interest_pct* leas_month/100
-annual_interest = total_interest / years
+# =============================
+# LEASING (REALISTICO MENSILE)
+# =============================
+leasing_amount = initial_investment * leasing_pct / 100
+
+r_month = (interest_pct / 100) / 12
+n_months = leas_month
+
+if n_months > 0:
+    if r_month > 0:
+        monthly_payment = leasing_amount * (
+            r_month * (1 + r_month)**n_months
+        ) / ((1 + r_month)**n_months - 1)
+    else:
+        monthly_payment = leasing_amount / n_months
+else:
+    monthly_payment = 0
+
+annual_leasing_payment = monthly_payment * 12
+leasing_years = leas_month / 12
 
 # =============================
 # FINANCIAL MODEL
@@ -126,6 +143,11 @@ def calculate_financials():
     cumulative_rev=0
 
     for y in range(1,years+1):
+
+        if y <= leasing_years:
+           leasing_cost = annual_leasing_payment
+        else:
+           leasing_cost = 0
         yearly_cost=(
             technology_cost+
             electricity_cost+
