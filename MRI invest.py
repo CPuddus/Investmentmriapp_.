@@ -15,6 +15,25 @@ from reportlab.platypus import Table, TableStyle
 ESAOTE_GREEN = "#6CC24A"
 
 # =============================
+# FORMAT FUNCTION
+# =============================
+def format_currency(value, symbol, currency_key):
+    abs_val = abs(value)
+
+    if "INR" in currency_key:
+        if abs_val >= 1e7:
+            return f"{symbol}{value/1e7:.2f} Cr"
+        elif abs_val >= 1e5:
+            return f"{symbol}{value/1e5:.2f} L"
+        else:
+            return f"{symbol}{value:,.0f}"
+
+    if any(x in currency_key for x in ["JPY","KRW","VND","IDR"]):
+        return f"{symbol}{value:,.0f}"
+
+    return f"{symbol}{value:,.2f}"
+
+# =============================
 # HEADER
 # =============================
 col1, col2 = st.columns([1,5])
@@ -26,10 +45,7 @@ with col1:
     )
 
 with col2:
-    st.markdown(
-        "<h1>Esaote MRI – ROI Simulator</h1>",
-        unsafe_allow_html=True
-    )
+    st.markdown("<h1>Esaote MRI – ROI Simulator</h1>", unsafe_allow_html=True)
 
 # =============================
 # CURRENCY
@@ -40,69 +56,49 @@ currency_options = {
     "EUR (€)": {"rate":1.0,"symbol":"€"},
     "USD ($)": {"rate":1.08,"symbol":"$"},
     "GBP (£)": {"rate":0.85,"symbol":"£"},
-    "CHF (CHF)": {"rate":0.95,"symbol":"CHF"}
+    "CHF (CHF)": {"rate":0.95,"symbol":"CHF"},
+
+    "JPY (¥ - Japan)": {"rate":160.0,"symbol":"¥"},
+    "KRW (₩ - South Korea)": {"rate":1450.0,"symbol":"₩"},
+    "INR (₹ - India)": {"rate":90.0,"symbol":"₹"},
+    "AUD (A$ - Australia)": {"rate":1.65,"symbol":"A$"},
+    "PHP (₱ - Philippines)": {"rate":60.0,"symbol":"₱"},
+    "MYR (RM - Malaysia)": {"rate":5.1,"symbol":"RM"},
+    "IDR (Rp - Indonesia)": {"rate":17000.0,"symbol":"Rp"},
+    "PKR (₨ - Pakistan)": {"rate":300.0,"symbol":"₨"},
+    "BDT (৳ - Bangladesh)": {"rate":120.0,"symbol":"৳"},
+    "THB (฿ - Thailand)": {"rate":39.0,"symbol":"฿"},
+    "VND (₫ - Vietnam)": {"rate":27000.0,"symbol":"₫"}
 }
 
 selected_currency = st.selectbox("Select Currency", list(currency_options.keys()))
-
 exchange_rate = currency_options[selected_currency]["rate"]
 currency_symbol = currency_options[selected_currency]["symbol"]
 
 # =============================
-# INVESTMENT
+# INPUTS
 # =============================
-st.markdown("### Investment")
-
 years = st.slider("Analysis Period (Years)",1,15,10)
+initial_investment = st.number_input("Initial Investment",0,2000000,500000,10000)
 
-initial_investment = st.number_input(
-    "Initial Investment",
-    0,2000000,500000,10000
-)
-
-st.markdown("### Leasing")
-
-leasing_pct = st.slider("Leasing % of initial investiemnts",0,100,80)
+leasing_pct = st.slider("Leasing %",0,100,80)
 leas_month = st.slider("Leasing Period (Months)", 12, 120, 60)
 interest_pct = st.slider("Interest %",0,15,5)
 
-# =============================
-# OPERATING COSTS
-# =============================
-st.markdown("### Operating Costs")
-
-technology_cost = st.number_input(
-    "Human Resources Cost Monthly",
-    0,10000,2500,100
-)*12
-
-electricity_cost = st.number_input(
-    "Electricity Monthly",
-    0,20000,5000,1000
-)*12
-
-maintenance_cost = st.number_input(
-    "Annual Maintenance",
-    0,100000,20000,5000
-)
+technology_cost = st.number_input("HR Monthly",0,10000,2500,100)*12
+electricity_cost = st.number_input("Electricity Monthly",0,20000,5000,1000)*12
+maintenance_cost = st.number_input("Maintenance Annual",0,100000,20000,5000)
 
 reporting_pct = st.slider("Reporting Cost %",0,20,5)
 
-# =============================
-# REVENUE
-# =============================
-st.markdown("### Revenue")
-
 exams_per_day = st.slider("Exams per Day",1,30,12)
-working_days = st.slider("Working Days per Year",1,365,200)
-average_price = st.slider("Average Exam Price",1,1000,200)
+working_days = st.slider("Working Days",1,365,200)
+average_price = st.slider("Price",1,1000,200)
 
 annual_revenue = exams_per_day * working_days * average_price
 reporting_cost = annual_revenue * reporting_pct/100
 
-# =============================
-# CURRENCY CONVERSION
-# =============================
+# currency conversion
 initial_investment *= exchange_rate
 annual_revenue *= exchange_rate
 technology_cost *= exchange_rate
@@ -113,29 +109,22 @@ reporting_cost *= exchange_rate
 # =============================
 # LEASING
 # =============================
-# =============================
-# LEASING (REALISTICO MENSILE)
-# =============================
 leasing_amount = initial_investment * leasing_pct / 100
-
 r_month = (interest_pct / 100) / 12
 n_months = leas_month
 
-if n_months > 0:
-    if r_month > 0:
-        monthly_payment = leasing_amount * (
-            r_month * (1 + r_month)**n_months
-        ) / ((1 + r_month)**n_months - 1)
-    else:
-        monthly_payment = leasing_amount / n_months
+if r_month > 0:
+    monthly_payment = leasing_amount * (
+        r_month * (1 + r_month)**n_months
+    ) / ((1 + r_month)**n_months - 1)
 else:
-    monthly_payment = 0
+    monthly_payment = leasing_amount / n_months
 
 annual_leasing_payment = monthly_payment * 12
 leasing_years = leas_month / 12
 
 # =============================
-# FINANCIAL MODEL
+# MODEL
 # =============================
 def calculate_financials():
     expenses=[initial_investment]
@@ -146,17 +135,10 @@ def calculate_financials():
 
     for y in range(1,years+1):
 
-        if y <= int(leasing_years):
-           leasing_cost = annual_leasing_payment
-        else:
-           leasing_cost = 0
-        yearly_cost=(
-            technology_cost+
-            electricity_cost+
-            maintenance_cost+
-            leasing_cost+
-            reporting_cost
-        )
+        leasing_cost = annual_leasing_payment if y <= leasing_years else 0
+
+        yearly_cost=(technology_cost+electricity_cost+maintenance_cost+leasing_cost+reporting_cost)
+
         cumulative_cost+=yearly_cost
         cumulative_rev+=annual_revenue
 
@@ -188,220 +170,54 @@ for i in range(len(df)):
 
 st.markdown("## Financial Overview")
 c1,c2,c3=st.columns(3)
-c1.metric("Total Revenue", f"{currency_symbol}{df['Revenues'].iloc[-1]:,.0f}")
-c2.metric("Net Profit", f"{currency_symbol}{final_profit:,.0f}")
+
+c1.metric("Revenue", format_currency(df['Revenues'].iloc[-1], currency_symbol, selected_currency))
+c2.metric("Profit", format_currency(final_profit, currency_symbol, selected_currency))
 c3.metric("ROI", f"{roi:.1f}%")
 
 # =============================
-# ALTAIR CHART: Revenue vs Expenses
+# CHARTS
 # =============================
-st.markdown("### Revenue vs Expenses")
 line_chart = alt.Chart(df).transform_fold(
-    ["Expenses","Revenues"],
-    as_=["Category","Value"]
-).mark_line(strokeWidth=4).encode(
+    ["Expenses","Revenues"]
+).mark_line().encode(
     x="Year:O",
-    y=alt.Y("Value:Q",title=f"Value ({currency_symbol})"),
-    color=alt.Color(
-        "Category:N",
-        scale=alt.Scale(
-            domain=["Expenses","Revenues"],
-            range=["red",ESAOTE_GREEN]
-        )
-    )
+    y=alt.Y("value:Q", axis=alt.Axis(format="~s")),
+    color="key:N"
 )
-st.altair_chart(line_chart,use_container_width=True)
 
-# =============================
-# ALTAIR CHART: Profit Annuale
-# =============================
-st.markdown("### Annual Profit Histogram")
+st.altair_chart(line_chart, use_container_width=True)
 
 profit_chart = alt.Chart(df).mark_bar().encode(
-    x=alt.X("Year:O", title="Year"),
-    y=alt.Y("Profit:Q", title=f"Profit ({currency_symbol})"),
-    color=alt.condition(
-        alt.datum.Profit >= 0,
-        alt.value(ESAOTE_GREEN),
-        alt.value("red")
-    ),
-    tooltip=["Year","Profit"]
+    x="Year:O",
+    y=alt.Y("Profit:Q", axis=alt.Axis(format="~s")),
+    color=alt.condition(alt.datum.Profit>=0, alt.value(ESAOTE_GREEN), alt.value("red"))
 )
 
-zero_line = alt.Chart(pd.DataFrame({"y":[0]})).mark_rule(
-    color="black"
-).encode(y="y:Q")
-
-chart = profit_chart + zero_line
-
-if break_even:
-    breakeven_line = alt.Chart(pd.DataFrame({"Year":[break_even]})).mark_rule(
-        color="blue", strokeDash=[6,4]
-    ).encode(x="Year:O")
-    chart = chart + breakeven_line
-
-st.altair_chart(chart, use_container_width=True)
+st.altair_chart(profit_chart, use_container_width=True)
 
 # =============================
-# PDF EXPORT
+# PDF
 # =============================
-def format_number(value, currency_symbol):
-    """Formattazione numerica per PDF."""
-    if abs(value) >= 1_000_000:
-        return f"{currency_symbol}{value/1_000_000:.1f}M"
-    elif abs(value) >= 1_000:
-        return f"{currency_symbol}{value/1_000:.0f}K"
-    else:
-        return f"{currency_symbol}{value:,.0f}"
-
-
-def create_pdf(df, final_profit, roi, monthly_payment, leas_month, annual_revenue, break_even, currency_symbol):
-    import matplotlib.pyplot as plt
-    from reportlab.lib.pagesizes import A4
-    from reportlab.pdfgen import canvas
-    from reportlab.lib.colors import HexColor
-    from reportlab.platypus import Table, TableStyle
-    import tempfile
-    import requests
-    from io import BytesIO
-    from PIL import Image
-
-    # =============================
-    # PROFIT CHART (BAR)
-    # =============================
-    chart_path = tempfile.NamedTemporaryFile(delete=False, suffix=".png").name
-    plt.figure(figsize=(9,5))
-    years_plot = df["Year"].values
-    profit_plot = df["Profit"].values
-
-    for i, v in enumerate(profit_plot):
-        color = "green" if v >= 0 else "red"
-        plt.bar(years_plot[i], v, color=color)
-    plt.axhline(0, color="black")
-    if break_even:
-        plt.axvline(break_even, linestyle="--")
-        plt.text(break_even, 0, f"Break-even Y{break_even}", fontsize=10, ha="left")
-    plt.title("Annual Profit")
-    plt.xlabel("Year")
-    plt.ylabel("Profit")
-    plt.grid(True, linestyle="--", alpha=0.5)
-    plt.tight_layout()
-    plt.savefig(chart_path, dpi=300)
-    plt.close()
-
-    # =============================
-    # REVENUE vs COST CHART (LINE)
-    # =============================
-    chart_path2 = tempfile.NamedTemporaryFile(delete=False, suffix=".png").name
-    plt.figure(figsize=(9,5))
-    plt.plot(df["Year"], df["Revenues"], label="Revenue", color=ESAOTE_GREEN, linewidth=2)
-    plt.plot(df["Year"], df["Expenses"], label="Expenses", color="red", linewidth=2)
-    plt.fill_between(df["Year"], df["Expenses"], df["Revenues"], color="grey", alpha=0.1)
-    plt.xlabel("Year")
-    plt.ylabel("Amount")
-    plt.title("Revenue vs Expenses")
-    plt.legend()
-    plt.grid(True, linestyle="--", alpha=0.5)
-    plt.tight_layout()
-    plt.savefig(chart_path2, dpi=300)
-    plt.close()
-
-    # =============================
-    # LOGO
-    # =============================
-    logo_url = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s"
-    response = requests.get(logo_url)
-    img = Image.open(BytesIO(response.content))
-    logo_path = tempfile.NamedTemporaryFile(delete=False, suffix=".png").name
-    img.save(logo_path)
-
-    # =============================
-    # CREATE PDF
-    # =============================
+def create_pdf():
     pdf_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
     c = canvas.Canvas(pdf_file.name, pagesize=A4)
 
-    # HEADER
-    c.drawImage(logo_path, 40, 770, width=120, height=40)
-    c.setFont("Helvetica-Bold", 20)
-    c.drawString(180, 780, "MRI ROI Financial Report")
+    c.setFont("Helvetica-Bold", 18)
+    c.drawString(50, 800, "MRI ROI Report")
 
-    # KPI BOX
-    c.setFillColor(HexColor(ESAOTE_GREEN))
-    c.rect(40, 690, 520, 60, fill=1)
-    c.setFillColor("white")
-    c.setFont("Helvetica-Bold", 13)
-    c.drawString(60, 720, f"Revenue: {format_number(df['Revenues'].iloc[-1], currency_symbol)}")
-    c.drawString(240, 720, f"Profit: {format_number(final_profit, currency_symbol)}")
-    c.drawString(420, 720, f"ROI: {roi:.1f}%")
+    c.setFont("Helvetica", 12)
+    c.drawString(50, 760, f"Revenue: {format_currency(df['Revenues'].iloc[-1], currency_symbol, selected_currency)}")
+    c.drawString(50, 740, f"Profit: {format_currency(final_profit, currency_symbol, selected_currency)}")
+    c.drawString(50, 720, f"ROI: {roi:.1f}%")
 
-    # Leasing Info
-    c.setFillColor("black")
-    c.setFont("Helvetica", 11)
-    c.drawString(50, 660, f"Monthly Leasing: {format_number(monthly_payment, currency_symbol)}")
-    c.drawString(50, 640, f"Leasing Duration: {leas_month} months")
-    c.drawString(50, 620, f"Total Leasing Paid: {format_number(monthly_payment * leas_month, currency_symbol)}")
-
-    # Break-even
     if break_even:
-        c.setFillColor(HexColor("#E8F5E9"))
-        c.rect(40, 590, 520, 25, fill=1)
-        c.setFillColor("black")
-        c.drawString(50, 598, f"Break-even reached in Year {break_even}")
-
-    # Charts
-    c.drawImage(chart_path2, 40, 340, width=520, height=230)  # Revenue vs Expenses
-    c.drawImage(chart_path, 40, 90, width=520, height=230)     # Profit bar
-
-    # Table
-    table_data = [["Year","Revenue","Expenses","Profit"]]
-    for _, row in df.iterrows():
-        table_data.append([
-            int(row["Year"]),
-            format_number(row["Revenues"], currency_symbol),
-            format_number(row["Expenses"], currency_symbol),
-            format_number(row["Profit"], currency_symbol)
-        ])
-    table = Table(table_data)
-    table.setStyle(TableStyle([
-        ("BACKGROUND",(0,0),(-1,0),HexColor(ESAOTE_GREEN)),
-        ("TEXTCOLOR",(0,0),(-1,0),"white"),
-        ("ALIGN",(0,0),(-1,-1),"CENTER"),
-        ("GRID",(0,0),(-1,-1),0.25,"grey"),
-        ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold"),
-        ("BOTTOMPADDING",(0,0),(-1,0),10),
-    ]))
-    table.wrapOn(c,400,200)
-    table.drawOn(c,60,20)
-
-    # Footer
-    c.setFont("Helvetica-Oblique", 9)
-    c.setFillColor("grey")
-    c.drawString(40, 10, "Confidential – MRI ROI Simulation")
-    c.drawRightString(550, 10, "Generated by ROI Simulator")
+        c.drawString(50, 700, f"Break-even Year: {break_even}")
 
     c.save()
     return pdf_file.name
 
-# =============================
-# DOWNLOAD
-# =============================
-if st.button("Export PDF Report"):
-    pdf_file = create_pdf(
-        df=df,
-        final_profit=final_profit,
-        roi=roi,
-        monthly_payment=monthly_payment,
-        leas_month=leas_month,
-        annual_revenue=annual_revenue,
-        break_even=break_even,
-        currency_symbol=currency_symbol
-    )
-    
-    with open(pdf_file, "rb") as f:
-        st.download_button(
-            "Download Report",
-            data=f,
-            file_name="MRI_ROI_Report.pdf",
-            mime="application/pdf"
-        )
+if st.button("Export PDF"):
+    pdf = create_pdf()
+    with open(pdf, "rb") as f:
+        st.download_button("Download PDF", f, "report.pdf")
