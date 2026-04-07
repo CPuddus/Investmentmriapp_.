@@ -282,3 +282,22 @@ def create_pdf():
 
     c.save()
     return pdf_file.name
+    if st.button("Export PDF Report"):
+    pdf_file = create_pdf(
+        df=df,
+        final_profit=final_profit,
+        roi=roi,
+        monthly_payment=monthly_payment,
+        leas_month=leas_month,
+        annual_revenue=annual_revenue,
+        break_even=break_even,
+        currency_symbol=currency_symbol
+    )
+    
+    with open(pdf_file, "rb") as f:
+        st.download_button(
+            "Download Report",
+            data=f,
+            file_name="MRI_ROI_Report.pdf",
+            mime="application/pdf"
+        )
