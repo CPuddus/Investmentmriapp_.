@@ -200,12 +200,68 @@ st.altair_chart(profit_chart, use_container_width=True)
 # PDF
 # =============================
 def create_pdf():
+    import tempfile
+    import matplotlib.pyplot as plt
+
+    # =============================
+    # PROFIT CHART
+    # =============================
+    profit_chart_path = tempfile.NamedTemporaryFile(delete=False, suffix=".png").name
+
+    plt.figure(figsize=(8,4))
+    for i, v in enumerate(df["Profit"]):
+        color = ESAOTE_GREEN if v >= 0 else "red"
+        plt.bar(df["Year"][i], v, color=color)
+
+    plt.axhline(0)
+    if break_even:
+        plt.axvline(break_even, linestyle="--")
+
+    plt.title("Annual Profit")
+    plt.xlabel("Year")
+    plt.ylabel(f"Profit ({currency_symbol})")
+
+    plt.gca().yaxis.set_major_formatter(
+        plt.FuncFormatter(lambda x, _: f"{x:,.0f}")
+    )
+
+    plt.tight_layout()
+    plt.savefig(profit_chart_path, dpi=300)
+    plt.close()
+
+    # =============================
+    # REVENUE vs EXPENSES
+    # =============================
+    rev_chart_path = tempfile.NamedTemporaryFile(delete=False, suffix=".png").name
+
+    plt.figure(figsize=(8,4))
+    plt.plot(df["Year"], df["Revenues"], label="Revenue", linewidth=2)
+    plt.plot(df["Year"], df["Expenses"], label="Expenses", linewidth=2)
+
+    plt.title("Revenue vs Expenses")
+    plt.xlabel("Year")
+    plt.ylabel(f"Value ({currency_symbol})")
+    plt.legend()
+
+    plt.gca().yaxis.set_major_formatter(
+        plt.FuncFormatter(lambda x, _: f"{x:,.0f}")
+    )
+
+    plt.tight_layout()
+    plt.savefig(rev_chart_path, dpi=300)
+    plt.close()
+
+    # =============================
+    # PDF
+    # =============================
     pdf_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
     c = canvas.Canvas(pdf_file.name, pagesize=A4)
 
+    # HEADER
     c.setFont("Helvetica-Bold", 18)
     c.drawString(50, 800, "MRI ROI Report")
 
+    # KPI
     c.setFont("Helvetica", 12)
     c.drawString(50, 760, f"Revenue: {format_currency(df['Revenues'].iloc[-1], currency_symbol, selected_currency)}")
     c.drawString(50, 740, f"Profit: {format_currency(final_profit, currency_symbol, selected_currency)}")
@@ -214,10 +270,15 @@ def create_pdf():
     if break_even:
         c.drawString(50, 700, f"Break-even Year: {break_even}")
 
+    # =============================
+    # INSERT CHARTS
+    # =============================
+    c.drawImage(rev_chart_path, 40, 400, width=520, height=200)
+    c.drawImage(profit_chart_path, 40, 150, width=520, height=200)
+
+    # FOOTER
+    c.setFont("Helvetica-Oblique", 9)
+    c.drawString(50, 30, "Confidential – MRI ROI Simulation")
+
     c.save()
     return pdf_file.name
-
-if st.button("Export PDF"):
-    pdf = create_pdf()
-    with open(pdf, "rb") as f:
-        st.download_button("Download PDF", f, "report.pdf")
