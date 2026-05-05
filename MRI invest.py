@@ -204,129 +204,187 @@ st.altair_chart(profit_chart, use_container_width=True)
 # =============================
 #  Create PDF
 # =============================
-def create_pdf():
-    import os
-    import tempfile
+def create_pdf_client_ready():
     import matplotlib.pyplot as plt
     from matplotlib.ticker import FuncFormatter
+    from io import BytesIO
 
     from reportlab.pdfgen import canvas
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.utils import ImageReader
 
-    import requests
-    from io import BytesIO
+    # =========================================================
+    # CONFIG (visual style)
+    # =========================================================
+    PRIMARY = "#1F4E79"   # deep corporate blue
+    GREEN = "#2E7D32"
+    RED = "#C62828"
+    GREY = "#6B6B6B"
 
-    # =============================
-    # PROFIT CHART
-    # =============================
-    profit_chart_path = tempfile.NamedTemporaryFile(delete=False, suffix=".png").name
+    # =========================================================
+    # HELPERS
+    # =========================================================
+    def fig_to_img(fig):
+        buf = BytesIO()
+        fig.savefig(buf, format="png", dpi=300, bbox_inches="tight")
+        buf.seek(0)
+        plt.close(fig)
+        return buf
 
-    plt.figure(figsize=(8,4))
-    for i, v in enumerate(df["Profit"]):
-        color = ESAOTE_GREEN if v >= 0 else "red"
-        plt.bar(df["Year"][i], v, color=color)
+    def format_num(x):
+        return f"{x:,.0f}"
 
-    plt.axhline(0)
+    # =========================================================
+    # INSIGHTS ENGINE (business layer)
+    # =========================================================
+    def generate_insights():
+        insights = []
 
-    if break_even:
-        plt.axvline(break_even, linestyle="--")
-
-    plt.title("Annual Profit")
-    plt.xlabel("Year")
-    plt.ylabel(f"Profit ({currency_symbol})")
-
-    plt.gca().yaxis.set_major_formatter(
-        FuncFormatter(lambda x, _: f"{x:,.0f}")
-    )
-
-    plt.tight_layout()
-    plt.savefig(profit_chart_path, dpi=300)
-    plt.close()
-
-    # =============================
-    # REVENUE vs EXPENSES
-    # =============================
-    rev_chart_path = tempfile.NamedTemporaryFile(delete=False, suffix=".png").name
-
-    plt.figure(figsize=(8,4))
-    plt.plot(df["Year"], df["Revenues"], label="Revenue", linewidth=2)
-    plt.plot(df["Year"], df["Expenses"], label="Expenses", linewidth=2)
-
-    plt.title("Revenue vs Expenses")
-    plt.xlabel("Year")
-    plt.ylabel(f"Value ({currency_symbol})")
-    plt.legend()
-
-    plt.gca().yaxis.set_major_formatter(
-        FuncFormatter(lambda x, _: f"{x:,.0f}")
-    )
-
-    plt.tight_layout()
-    plt.savefig(rev_chart_path, dpi=300)
-    plt.close()
-
-    # =============================
-    # PDF
-    # =============================
-    pdf_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
-    pdf_file.close()
-
-    c = canvas.Canvas(pdf_file.name, pagesize=A4)
-
-    # HEADER
-    c.setFont("Helvetica-Bold", 18)
-    c.drawString(250, 780, "MRI ROI Report")
-
-    # LOGO (safe)
-    try:
-        response = requests.get(
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s",
-            timeout=5
+        roi_level = (
+            "strong" if roi > 50 else
+            "moderate" if roi > 10 else
+            "weak"
         )
-        response.raise_for_status()
-        img = ImageReader(BytesIO(response.content))
-        c.drawImage(img, 50, 780, width=70, height=18)
-    except Exception:
-        pass  # don't crash if logo fails
 
-    # KPI
-    c.setFont("Helvetica", 12)
-    c.drawString(255, 760, f"Revenue: {format_currency(df['Revenues'].iloc[-1], currency_symbol, selected_currency)}")
-    c.drawString(255, 740, f"Profit: {format_currency(final_profit, currency_symbol, selected_currency)}")
-    c.drawString(255, 720, f"ROI: {roi:.1f}%")
+        insights.append(f"ROI performance is classified as {roi_level} ({roi:.1f}%).")
+
+        if break_even:
+            insights.append(f"Break-even achieved in year {break_even}.")
+        else:
+            insights.append("Break-even not reached in projected period.")
+
+        trend = df["Profit"].iloc[-3:].mean()
+        if trend > 0:
+            insights.append("Recent profitability trend is positive.")
+        else:
+            insights.append("Recent profitability shows downward pressure.")
+
+        return insights
+
+    insights = generate_insights()
+
+    # =========================================================
+    # CHART 1 — PROFIT TREND
+    # =========================================================
+    fig1, ax1 = plt.subplots(figsize=(7, 3))
+
+    colors = [GREEN if v >= 0 else RED for v in df["Profit"]]
+    ax1.bar(df["Year"], df["Profit"], color=colors)
+
+    ax1.axhline(0, color="black", linewidth=0.8)
+    if break_even:
+        ax1.axvline(break_even, linestyle="--", color=PRIMARY)
+
+    ax1.set_title("Profit Evolution", fontsize=12, color=PRIMARY)
+    ax1.set_ylabel(f"Profit ({currency_symbol})")
+
+    ax1.yaxis.set_major_formatter(FuncFormatter(lambda x, _: format_num(x)))
+
+    chart1 = fig_to_img(fig1)
+
+    # =========================================================
+    # CHART 2 — REVENUE VS COST
+    # =========================================================
+    fig2, ax2 = plt.subplots(figsize=(7, 3))
+
+    ax2.plot(df["Year"], df["Revenues"], label="Revenue", linewidth=2, color=PRIMARY)
+    ax2.plot(df["Year"], df["Expenses"], label="Costs", linewidth=2, color=RED)
+
+    ax2.set_title("Revenue vs Costs", fontsize=12, color=PRIMARY)
+    ax2.set_ylabel(f"Value ({currency_symbol})")
+    ax2.legend()
+
+    ax2.yaxis.set_major_formatter(FuncFormatter(lambda x, _: format_num(x)))
+
+    chart2 = fig_to_img(fig2)
+
+    # =========================================================
+    # PDF
+    # =========================================================
+    pdf_path = BytesIO()
+    c = canvas.Canvas(pdf_path, pagesize=A4)
+
+    # -----------------------------
+    # HEADER
+    # -----------------------------
+    c.setFont("Helvetica-Bold", 20)
+    c.setFillColorRGB(0.1, 0.1, 0.1)
+    c.drawString(50, 800, "MRI Investment ROI Report")
+
+    c.setFont("Helvetica", 10)
+    c.setFillColorRGB(0.4, 0.4, 0.4)
+    c.drawString(50, 785, "Executive Financial Analysis")
+
+    # divider
+    c.setStrokeColorRGB(0.85, 0.85, 0.85)
+    c.line(50, 775, 550, 775)
+
+    # -----------------------------
+    # KPI SECTION (McKinsey style cards)
+    # -----------------------------
+    def kpi(x, y, title, value):
+        c.setFont("Helvetica", 9)
+        c.setFillColorRGB(0.4, 0.4, 0.4)
+        c.drawString(x, y, title)
+
+        c.setFont("Helvetica-Bold", 12)
+        c.setFillColorRGB(0, 0, 0)
+        c.drawString(x, y - 14, value)
+
+    kpi(50, 740, "Revenue", format_currency(df["Revenues"].iloc[-1], currency_symbol, selected_currency))
+    kpi(220, 740, "Profit", format_currency(final_profit, currency_symbol, selected_currency))
+    kpi(360, 740, "ROI", f"{roi:.1f}%")
 
     if break_even:
-        c.drawString(255, 700, f"Break-even Year: {break_even}")
+        kpi(470, 740, "Break-even", str(break_even))
 
-    # CHARTS
-    c.drawImage(rev_chart_path, 30, 400, width=520, height=275)
-    c.drawImage(profit_chart_path, 30, 80, width=520, height=275)
+    # -----------------------------
+    # EXECUTIVE INSIGHTS
+    # -----------------------------
+    c.setFont("Helvetica-Bold", 12)
+    c.setFillColorRGB(0.1, 0.1, 0.1)
+    c.drawString(50, 690, "Executive Summary")
 
+    c.setFont("Helvetica", 10)
+    c.setFillColorRGB(0.35, 0.35, 0.35)
+
+    y = 670
+    for ins in insights:
+        c.drawString(55, y, f"• {ins}")
+        y -= 15
+
+    # -----------------------------
+    # CHARTS SECTION
+    # -----------------------------
+    c.setFont("Helvetica-Bold", 12)
+    c.setFillColorRGB(0.1, 0.1, 0.1)
+    c.drawString(50, 600, "Financial Performance")
+
+    c.drawImage(ImageReader(chart1), 50, 380, width=500, height=200)
+    c.drawImage(ImageReader(chart2), 50, 150, width=500, height=200)
+
+    # -----------------------------
     # FOOTER
-    c.setFont("Helvetica-Oblique", 9)
-    c.drawString(50, 30, "Confidential – MRI ROI Simulation")
+    # -----------------------------
+    c.setFont("Helvetica-Oblique", 8)
+    c.setFillColorRGB(0.5, 0.5, 0.5)
+    c.drawString(50, 30, "Confidential — Generated MRI ROI Analysis")
 
     c.save()
+    pdf_path.seek(0)
 
-    # CLEANUP charts (keep PDF)
-    for path in [profit_chart_path, rev_chart_path]:
-        if os.path.exists(path):
-            os.remove(path)
-
-    return pdf_file.name
+    return pdf_path
      
     
 # =============================
 # DOWNLOAD BUTTON (FUORI dalla funzione)
 # =============================
-if st.button("Export PDF Report"):
-    pdf_file = create_pdf()
+if st.button("Export Report"):
+    pdf = create_pdf_client_ready()
 
-    with open(pdf_file, "rb") as f:
-        st.download_button(
-            "Download Report",
-            data=f,
-            file_name="MRI_ROI_Report.pdf",
-            mime="application/pdf"
-        )
+    st.download_button(
+        "Download  Report",
+        data=pdf,
+        file_name="MRI_ROI_Report.pdf",
+        mime="application/pdf"
+    )
