@@ -302,9 +302,9 @@ if st.button("Export PDF Report"):
    pdf_file = create_pdf()
     
     with open(pdf_file, "rb") as f:
-    st.download_button(
-    "Download Report",
-    data=f,
-    file_name="MRI_ROI_Report.pdf",
-    mime="application/pdf"
-            )
+        st.download_button(
+        "Download Report",
+        data=f,
+        file_name="MRI_ROI_Report.pdf",
+        mime="application/pdf"
+                )
