@@ -367,8 +367,8 @@ def create_pdf_client_ready():
     c.setFillColorRGB(0.1, 0.1, 0.1)
     c.drawString(50, 600, "Financial Performance")
 
-    c.drawImage(ImageReader(chart1), 50, 350, width=500, height=230)
-    c.drawImage(ImageReader(chart2), 50, 50, width=500, height=230)
+    c.drawImage(ImageReader(chart1), 50, 350, width=500, height=240)
+    c.drawImage(ImageReader(chart2), 50, 80, width=500, height=240)
 
     # -----------------------------
     # FOOTER
