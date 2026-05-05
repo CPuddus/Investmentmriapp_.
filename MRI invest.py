@@ -201,7 +201,6 @@ profit_chart = alt.Chart(df).mark_bar().encode(
 )
 
 st.altair_chart(profit_chart, use_container_width=True)
-
 # =============================
 # PDF
 # =============================
@@ -256,6 +255,36 @@ def create_pdf():
     plt.tight_layout()
     plt.savefig(rev_chart_path, dpi=300)
     plt.close()
+
+    # =============================
+    # PDF
+    # =============================
+    pdf_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+    c = canvas.Canvas(pdf_file.name, pagesize=A4)
+
+    # HEADER
+    c.setFont("Helvetica-Bold", 18)
+    c.drawString(50, 800, "MRI ROI Report")
+
+    # KPI
+    c.setFont("Helvetica", 12)
+    c.drawString(50, 760, f"Revenue: {format_currency(df['Revenues'].iloc[-1], currency_symbol, selected_currency)}")
+    c.drawString(50, 740, f"Profit: {format_currency(final_profit, currency_symbol, selected_currency)}")
+    c.drawString(50, 720, f"ROI: {roi:.1f}%")
+
+    if break_even:
+        c.drawString(50, 700, f"Break-even Year: {break_even}")
+
+    # CHARTS
+    c.drawImage(rev_chart_path, 40, 400, width=520, height=200)
+    c.drawImage(profit_chart_path, 40, 150, width=520, height=200)
+
+    # FOOTER
+    c.setFont("Helvetica-Oblique", 9)
+    c.drawString(50, 30, "Confidential – MRI ROI Simulation")
+
+    c.save()
+    return pdf_file.name
  
 
 
