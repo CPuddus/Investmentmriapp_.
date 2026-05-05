@@ -240,13 +240,7 @@ def create_pdf_client_ready():
     def generate_insights():
         insights = []
 
-        roi_level = (
-            "strong" if roi > 50 else
-            "moderate" if roi > 10 else
-            "weak"
-        )
-
-        insights.append(f"ROI performance is classified as {roi_level} ({roi:.1f}%).")
+        insights.append(f"ROI performance is classified as ({roi:.1f}%).")
 
         if break_even:
             insights.append(f"Break-even achieved in year {break_even}.")
@@ -313,7 +307,7 @@ def create_pdf_client_ready():
 
     c.setFont("Helvetica", 10)
     c.setFillColorRGB(0.4, 0.4, 0.4)
-    c.drawString(50, 785, "Executive Financial Analysis")
+    c.drawString(50, 800, "Financial Analysis")
 
     # LOGO (safe)
     try:
@@ -333,7 +327,7 @@ def create_pdf_client_ready():
     c.line(50, 775, 550, 775)
 
     # -----------------------------
-    # KPI SECTION (McKinsey style cards)
+    # KPI SECTION 
     # -----------------------------
     def kpi(x, y, title, value):
         c.setFont("Helvetica", 9)
@@ -373,8 +367,8 @@ def create_pdf_client_ready():
     c.setFillColorRGB(0.1, 0.1, 0.1)
     c.drawString(50, 600, "Financial Performance")
 
-    c.drawImage(ImageReader(chart1), 50, 380, width=500, height=200)
-    c.drawImage(ImageReader(chart2), 50, 150, width=500, height=200)
+    c.drawImage(ImageReader(chart1), 50, 450, width=500, height=250)
+    c.drawImage(ImageReader(chart2), 50, 150, width=500, height=250)
 
     # -----------------------------
     # FOOTER
