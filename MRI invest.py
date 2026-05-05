@@ -268,7 +268,7 @@ def create_pdf_enterprise():
 
     c.setFont("Helvetica", 10)
     c.setFillColorRGB(*grey)
-    c.drawString(50, height - 80, "Executive Financial Report")
+    c.drawString(50, height - 80, "Financial Report")
 
     # logo
     logo = load_logo()
@@ -313,13 +313,11 @@ def create_pdf_enterprise():
     # =====================================================
     c.setFont("Helvetica-Bold", 13)
     c.setFillColorRGB(*title_color)
-    c.drawString(50, height - 180, "Executive Summary")
+    c.drawString(50, height - 180, "Summary")
 
     summary_text = [
         f"The MRI investment generates a total ROI of {roi:.1f}%.",
         f"{'Break-even achieved in year ' + str(break_even) if break_even else 'Break-even not achieved within analysis period.'}",
-        "Financial performance is driven primarily by utilization rate and pricing strategy.",
-        "Cost structure is dominated by fixed operational and leasing expenses."
     ]
 
     c.setFont("Helvetica", 9)
@@ -356,30 +354,7 @@ def create_pdf_enterprise():
     ax1.legend()
     chart1 = fig_to_img(fig1)
 
-    c.drawImage(ImageReader(chart1), 50, y - 200, width=500, height=180)
-
-
-    # =====================================================
-    # SECTION: PROFIT DRIVERS
-    # =====================================================
-    c.setFont("Helvetica-Bold", 13)
-    c.setFillColorRGB(*title_color)
-    c.drawString(50, y - 230, "Key Drivers")
-
-    drivers = [
-        "Exam volume is the primary revenue driver.",
-        "Leasing structure significantly impacts early-year profitability.",
-        "Operational costs remain stable and predictable.",
-        "Pricing sensitivity strongly affects ROI scalability."
-    ]
-
-    c.setFont("Helvetica", 9)
-    c.setFillColorRGB(*grey)
-
-    yy = y - 250
-    for d in drivers:
-        c.drawString(55, yy, "• " + d)
-        yy -= 14
+    c.drawImage(ImageReader(chart1), 50, y - 200, width=500, height=250)
 
 
     # =====================================================
@@ -392,7 +367,7 @@ def create_pdf_enterprise():
     ax2.set_title("Profit Evolution")
     chart2 = fig_to_img(fig2)
 
-    c.drawImage(ImageReader(chart2), 50, 100, width=500, height=180)
+    c.drawImage(ImageReader(chart2), 50, 60, width=500, height=250)
 
 
     # =====================================================
