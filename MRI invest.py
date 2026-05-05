@@ -227,84 +227,96 @@ def load_logo():
     return BytesIO(r.content)
 
 
-# =============================
-# PDF GENERATION (OPTIMIZED)
-# =============================
-def create_pdf_client_ready():
 
-    PRIMARY = "#1F4E79"
-    GREEN = "#2E7D32"
-    RED = "#C62828"
+    # =========================================================
+    # PDF
+    # =========================================================
+    pdf_path = BytesIO()
+    c = canvas.Canvas(pdf_path, pagesize=A4)
 
-    def fig_to_img(fig):
-        buf = BytesIO()
-        fig.savefig(buf, format="png", dpi=300, bbox_inches="tight")
-        buf.seek(0)
-        plt.close(fig)
-        return buf
-
-    def format_num(x):
-        return f"{x:,.0f}"
-
-    insights = [
-        f"ROI performance is {roi:.1f}%",
-        f"Break-even: {'Year ' + str(break_even) if break_even else 'Not reached'}",
-        "Recent trend: " + ("Positive" if df["Profit"].iloc[-3:].mean() > 0 else "Negative")
-    ]
-
-    # CHART 1
-    fig1, ax1 = plt.subplots(figsize=(7, 3))
-    colors = [GREEN if v >= 0 else RED for v in df["Profit"]]
-    ax1.bar(df["Year"], df["Profit"], color=colors)
-    ax1.axhline(0, color="black", linewidth=0.8)
-    ax1.set_title("Profit Evolution")
-    chart1 = fig_to_img(fig1)
-
-    # CHART 2
-    fig2, ax2 = plt.subplots(figsize=(7, 3))
-    ax2.plot(df["Year"], df["Revenues"], label="Revenue", color=PRIMARY)
-    ax2.plot(df["Year"], df["Expenses"], label="Costs", color=RED)
-    ax2.legend()
-    chart2 = fig_to_img(fig2)
-
-    pdf = BytesIO()
-    c = canvas.Canvas(pdf, pagesize=A4)
-
+    # -----------------------------
     # HEADER
-    c.setFont("Helvetica-Bold", 18)
-    c.drawString(50, 800, "MRI ROI Report")
+    # -----------------------------
+    c.setFont("Helvetica-Bold", 20)
+    c.setFillColorRGB(0.1, 0.1, 0.1)
+    c.drawString(50, 800, "MRI Investment ROI Report")
 
-    # LOGO (cached-safe)
-    try:
-        logo = load_logo()
-        c.drawImage(ImageReader(logo), 470, 800, width=70, height=18)
-    except:
-        pass
-
-    # KPIs
     c.setFont("Helvetica", 10)
-    c.drawString(50, 760, f"Revenue: {format_currency(df['Revenues'].iloc[-1], currency_symbol, selected_currency)}")
-    c.drawString(50, 745, f"Profit: {format_currency(final_profit, currency_symbol, selected_currency)}")
-    c.drawString(50, 730, f"ROI: {roi:.1f}%")
+    c.setFillColorRGB(0.4, 0.4, 0.4)
+    c.drawString(50, 780, "Financial Analysis")
 
-    # INSIGHTS
-    y = 700
+    # LOGO (safe)
+    try:
+        response = requests.get(
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s",
+            timeout=5
+        )
+        response.raise_for_status()
+        img = ImageReader(BytesIO(response.content))
+        c.drawImage(img, 480, 800, width=70, height=18)
+    except Exception:
+        pass  # don't crash if logo fails
+
+
+    # divider
+    c.setStrokeColorRGB(0.85, 0.85, 0.85)
+    c.line(50, 775, 550, 775)
+
+    # -----------------------------
+    # KPI SECTION 
+    # -----------------------------
+    def kpi(x, y, title, value):
+        c.setFont("Helvetica", 9)
+        c.setFillColorRGB(0.4, 0.4, 0.4)
+        c.drawString(x, y, title)
+
+        c.setFont("Helvetica-Bold", 12)
+        c.setFillColorRGB(0, 0, 0)
+        c.drawString(x, y - 14, value)
+
+    kpi(50, 740, "Revenue", format_currency(df["Revenues"].iloc[-1], currency_symbol, selected_currency))
+    kpi(220, 740, "Profit", format_currency(final_profit, currency_symbol, selected_currency))
+    kpi(360, 740, "ROI", f"{roi:.1f}%")
+
+    if break_even:
+        kpi(470, 740, "Break-even", str(break_even))
+
+    # -----------------------------
+    # EXECUTIVE INSIGHTS
+    # -----------------------------
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y, "Insights")
-    y -= 20
+    c.setFillColorRGB(0.1, 0.1, 0.1)
+    c.drawString(50, 690, "Summary")
 
-    c.setFont("Helvetica", 9)
+    c.setFont("Helvetica", 10)
+    c.setFillColorRGB(0.35, 0.35, 0.35)
+
+    y = 670
     for ins in insights:
-        c.drawString(55, y, f"- {ins}")
+        c.drawString(55, y, f"• {ins}")
         y -= 15
 
-    # CHARTS
-    c.drawImage(ImageReader(chart1), 50, 350, width=500, height=200)
-    c.drawImage(ImageReader(chart2), 50, 120, width=500, height=200)
+    # -----------------------------
+    # CHARTS SECTION
+    # -----------------------------
+    c.setFont("Helvetica-Bold", 12)
+    c.setFillColorRGB(0.1, 0.1, 0.1)
+    c.drawString(50, 600, "Financial Performance")
+
+    c.drawImage(ImageReader(chart1), 50, 330, width=500, height=240)
+    c.drawImage(ImageReader(chart2), 50, 60, width=500, height=240)
+
+    # -----------------------------
+    # FOOTER
+    # -----------------------------
+    c.setFont("Helvetica-Oblique", 8)
+    c.setFillColorRGB(0.5, 0.5, 0.5)
+    c.drawString(50, 30, "Confidential — Generated MRI ROI Analysis")
 
     c.save()
-    pdf.seek(0)
-    return pdf
+    pdf_path.seek(0)
+
+    return pdf_path
 
 
 # =============================
