@@ -276,7 +276,7 @@ def create_pdf():
 
     # HEADER
     c.setFont("Helvetica-Bold", 18)
-    c.drawString(50, 800, "MRI ROI Report")
+    c.drawString(150, 770, "MRI ROI Report")
 
     # LOGO (safe)
     try:
@@ -286,7 +286,7 @@ def create_pdf():
         )
         response.raise_for_status()
         img = ImageReader(BytesIO(response.content))
-        c.drawImage(img, 380, 780, width=150, height=40)
+        c.drawImage(img, 380, 780, width=70, height=15)
     except Exception:
         pass  # don't crash if logo fails
 
@@ -300,8 +300,8 @@ def create_pdf():
         c.drawString(50, 700, f"Break-even Year: {break_even}")
 
     # CHARTS
-    c.drawImage(rev_chart_path, 30, 400, width=520, height=250)
-    c.drawImage(profit_chart_path, 30, 50, width=520, height=250)
+    c.drawImage(rev_chart_path, 30, 400, width=520, height=300)
+    c.drawImage(profit_chart_path, 30, 50, width=520, height=300)
 
     # FOOTER
     c.setFont("Helvetica-Oblique", 9)
