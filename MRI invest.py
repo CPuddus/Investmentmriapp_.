@@ -265,6 +265,10 @@ def create_pdf():
     # HEADER
     c.setFont("Helvetica-Bold", 18)
     c.drawString(50, 800, "MRI ROI Report")
+    c.image(
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s",
+        width=150
+    )
 
     # KPI
     c.setFont("Helvetica", 12)
@@ -286,8 +290,6 @@ def create_pdf():
     c.save()
     return pdf_file.name
  
-
-
 
 # =============================
 # DOWNLOAD BUTTON (FUORI dalla funzione)
