@@ -218,19 +218,35 @@ profit_chart = alt.Chart(df).mark_bar().encode(
 st.altair_chart(profit_chart, use_container_width=True)
 
 
-# =============================
+
+# =========================================================
+# INSIGHTS (mancava)
+# =========================================================
+insights = [
+    f"ROI performance: {roi:.1f}%",
+    f"Break-even: {'Year ' + str(break_even) if break_even else 'Not reached'}",
+    "Trend: " + ("Positive" if df["Profit"].iloc[-3:].mean() > 0 else "Negative")
+]
+
+
+# =========================================================
 # LOGO CACHE
-# =============================
+# =========================================================
 @st.cache_data
 def load_logo():
-    r = requests.get(LOGO_URL, timeout=5)
-    return BytesIO(r.content)
+    try:
+        r = requests.get(LOGO_URL, timeout=5)
+        r.raise_for_status()
+        return BytesIO(r.content)
+    except:
+        return None
 
 
+# =========================================================
+# PDF FUNCTION (FIXED + COMPLETE)
+# =========================================================
+def create_pdf():
 
-    # =========================================================
-    # PDF
-    # =========================================================
     pdf_path = BytesIO()
     c = canvas.Canvas(pdf_path, pagesize=A4)
 
@@ -245,25 +261,20 @@ def load_logo():
     c.setFillColorRGB(0.4, 0.4, 0.4)
     c.drawString(50, 780, "Financial Analysis")
 
-    # LOGO (safe)
-    try:
-        response = requests.get(
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s",
-            timeout=5
-        )
-        response.raise_for_status()
-        img = ImageReader(BytesIO(response.content))
-        c.drawImage(img, 480, 800, width=70, height=18)
-    except Exception:
-        pass  # don't crash if logo fails
-
+    # LOGO
+    logo = load_logo()
+    if logo:
+        try:
+            c.drawImage(ImageReader(logo), 480, 800, width=70, height=18)
+        except:
+            pass
 
     # divider
     c.setStrokeColorRGB(0.85, 0.85, 0.85)
     c.line(50, 775, 550, 775)
 
     # -----------------------------
-    # KPI SECTION 
+    # KPI
     # -----------------------------
     def kpi(x, y, title, value):
         c.setFont("Helvetica", 9)
@@ -274,41 +285,61 @@ def load_logo():
         c.setFillColorRGB(0, 0, 0)
         c.drawString(x, y - 14, value)
 
-    kpi(50, 740, "Revenue", format_currency(df["Revenues"].iloc[-1], currency_symbol, selected_currency))
-    kpi(220, 740, "Profit", format_currency(final_profit, currency_symbol, selected_currency))
+    kpi(50, 740, "Revenue",
+        format_currency(df["Revenues"].iloc[-1], currency_symbol, selected_currency))
+
+    kpi(220, 740, "Profit",
+        format_currency(final_profit, currency_symbol, selected_currency))
+
     kpi(360, 740, "ROI", f"{roi:.1f}%")
 
-    if break_even:
-        kpi(470, 740, "Break-even", str(break_even))
+    if break_even is not None:
+        kpi(470, 740, "Break-even", f"Year {break_even}")
+
 
     # -----------------------------
-    # EXECUTIVE INSIGHTS
+    # SUMMARY
     # -----------------------------
     c.setFont("Helvetica-Bold", 12)
-    c.setFillColorRGB(0.1, 0.1, 0.1)
     c.drawString(50, 690, "Summary")
 
-    c.setFont("Helvetica", 10)
-    c.setFillColorRGB(0.35, 0.35, 0.35)
+    c.setFont("Helvetica", 9)
 
     y = 670
     for ins in insights:
         c.drawString(55, y, f"• {ins}")
         y -= 15
 
+
     # -----------------------------
-    # CHARTS SECTION
+    # CHARTS (SAFE FIX)
     # -----------------------------
-    c.setFont("Helvetica-Bold", 12)
-    c.setFillColorRGB(0.1, 0.1, 0.1)
-    c.drawString(50, 600, "Financial Performance")
+    import matplotlib.pyplot as plt
+
+    def fig_to_img(fig):
+        buf = BytesIO()
+        fig.savefig(buf, format="png", dpi=300, bbox_inches="tight")
+        buf.seek(0)
+        plt.close(fig)
+        return buf
+
+    # Chart 1
+    fig1, ax1 = plt.subplots()
+    ax1.bar(df["Year"], df["Profit"], color="green")
+    ax1.axhline(0, color="black")
+    chart1 = fig_to_img(fig1)
+
+    # Chart 2
+    fig2, ax2 = plt.subplots()
+    ax2.plot(df["Year"], df["Revenues"], label="Revenue")
+    ax2.plot(df["Year"], df["Expenses"], label="Costs")
+    ax2.legend()
+    chart2 = fig_to_img(fig2)
 
     c.drawImage(ImageReader(chart1), 50, 330, width=500, height=240)
     c.drawImage(ImageReader(chart2), 50, 60, width=500, height=240)
 
-    # -----------------------------
     # FOOTER
-    # -----------------------------
     c.setFont("Helvetica-Oblique", 8)
     c.setFillColorRGB(0.5, 0.5, 0.5)
     c.drawString(50, 30, "Confidential — Generated MRI ROI Analysis")
@@ -317,22 +348,22 @@ def load_logo():
     pdf_path.seek(0)
 
     return pdf_path
-# =============================
-# DOWNLOAD UX (ROBUST)
-# =============================
+
+
+# =========================================================
+# DOWNLOAD
+# =========================================================
 
 if "pdf_report" not in st.session_state:
     st.session_state.pdf_report = None
 
 if st.button("Generate Report"):
-
     with st.spinner("Generating PDF..."):
-        st.session_state.pdf_report = create_pdf_client_ready()
+        st.session_state.pdf_report = create_pdf()
 
 if st.session_state.pdf_report:
-
     st.download_button(
-        label="Download Report",
+        "Download Report",
         data=st.session_state.pdf_report,
         file_name="MRI_ROI_Report.pdf",
         mime="application/pdf"
