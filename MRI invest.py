@@ -300,8 +300,8 @@ def create_pdf():
         c.drawString(250, 700, f"Break-even Year: {break_even}")
 
     # CHARTS
-    c.drawImage(rev_chart_path, 30, 400, width=520, height=300)
-    c.drawImage(profit_chart_path, 30, 50, width=520, height=300)
+    c.drawImage(rev_chart_path, 30, 400, width=520, height=275)
+    c.drawImage(profit_chart_path, 30, 50, width=520, height=275)
 
     # FOOTER
     c.setFont("Helvetica-Oblique", 9)
