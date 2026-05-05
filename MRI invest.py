@@ -315,6 +315,19 @@ def create_pdf_client_ready():
     c.setFillColorRGB(0.4, 0.4, 0.4)
     c.drawString(50, 785, "Executive Financial Analysis")
 
+    # LOGO (safe)
+    try:
+        response = requests.get(
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s",
+            timeout=5
+        )
+        response.raise_for_status()
+        img = ImageReader(BytesIO(response.content))
+        c.drawImage(img, 50, 280, width=70, height=18)
+    except Exception:
+        pass  # don't crash if logo fails
+
+
     # divider
     c.setStrokeColorRGB(0.85, 0.85, 0.85)
     c.line(50, 775, 550, 775)
