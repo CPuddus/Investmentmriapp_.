@@ -93,7 +93,7 @@ reporting_pct = st.slider("Reporting Cost %",0,20,5)
 
 exams_per_day = st.slider("Exams per Day",1,30,12)
 working_days = st.slider("Working Days",1,365,200)
-average_price = st.slider("Price",1,10000000,200)
+average_price = st.slider("Interest %",0,150,5)
 
 annual_revenue = exams_per_day * working_days * average_price
 reporting_cost = annual_revenue * reporting_pct/100
