@@ -317,21 +317,23 @@ def load_logo():
     pdf_path.seek(0)
 
     return pdf_path
-
-
 # =============================
-# DOWNLOAD UX FIXED
+# DOWNLOAD UX (ROBUST)
 # =============================
-if "pdf" not in st.session_state:
-    st.session_state.pdf = None
+
+if "pdf_report" not in st.session_state:
+    st.session_state.pdf_report = None
 
 if st.button("Generate Report"):
-    st.session_state.pdf = create_pdf_client_ready()
 
-if st.session_state.pdf:
+    with st.spinner("Generating PDF..."):
+        st.session_state.pdf_report = create_pdf_client_ready()
+
+if st.session_state.pdf_report:
+
     st.download_button(
-        "Download Report",
-        data=st.session_state.pdf,
+        label="Download Report",
+        data=st.session_state.pdf_report,
         file_name="MRI_ROI_Report.pdf",
         mime="application/pdf"
     )
