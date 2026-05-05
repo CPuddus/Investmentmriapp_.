@@ -202,11 +202,20 @@ profit_chart = alt.Chart(df).mark_bar().encode(
 
 st.altair_chart(profit_chart, use_container_width=True)
 # =============================
-# PDF
+#  Create PDF
 # =============================
 def create_pdf():
+    import os
     import tempfile
     import matplotlib.pyplot as plt
+    from matplotlib.ticker import FuncFormatter
+
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.utils import ImageReader
+
+    import requests
+    from io import BytesIO
 
     # =============================
     # PROFIT CHART
@@ -219,6 +228,7 @@ def create_pdf():
         plt.bar(df["Year"][i], v, color=color)
 
     plt.axhline(0)
+
     if break_even:
         plt.axvline(break_even, linestyle="--")
 
@@ -227,7 +237,7 @@ def create_pdf():
     plt.ylabel(f"Profit ({currency_symbol})")
 
     plt.gca().yaxis.set_major_formatter(
-        plt.FuncFormatter(lambda x, _: f"{x:,.0f}")
+        FuncFormatter(lambda x, _: f"{x:,.0f}")
     )
 
     plt.tight_layout()
@@ -249,49 +259,61 @@ def create_pdf():
     plt.legend()
 
     plt.gca().yaxis.set_major_formatter(
-        plt.FuncFormatter(lambda x, _: f"{x:,.0f}")
+        FuncFormatter(lambda x, _: f"{x:,.0f}")
     )
 
     plt.tight_layout()
     plt.savefig(rev_chart_path, dpi=300)
     plt.close()
 
-# =============================
-# PDF
-# =============================
+    # =============================
+    # PDF
+    # =============================
     pdf_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
     pdf_file.close()
-    
+
     c = canvas.Canvas(pdf_file.name, pagesize=A4)
-    
+
     # HEADER
     c.setFont("Helvetica-Bold", 18)
     c.drawString(50, 800, "MRI ROI Report")
-    
-    # Load image from URL
-    response = requests.get("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s")
-    img = ImageReader(BytesIO(response.content))
-    c.drawImage(img, 380, 780, width=150, height=50)
-    
+
+    # LOGO (safe)
+    try:
+        response = requests.get(
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s",
+            timeout=5
+        )
+        response.raise_for_status()
+        img = ImageReader(BytesIO(response.content))
+        c.drawImage(img, 380, 780, width=150, height=50)
+    except Exception:
+        pass  # don't crash if logo fails
+
     # KPI
     c.setFont("Helvetica", 12)
     c.drawString(50, 760, f"Revenue: {format_currency(df['Revenues'].iloc[-1], currency_symbol, selected_currency)}")
     c.drawString(50, 740, f"Profit: {format_currency(final_profit, currency_symbol, selected_currency)}")
     c.drawString(50, 720, f"ROI: {roi:.1f}%")
-    
+
     if break_even:
         c.drawString(50, 700, f"Break-even Year: {break_even}")
-    
+
     # CHARTS
     c.drawImage(rev_chart_path, 40, 400, width=520, height=200)
     c.drawImage(profit_chart_path, 40, 150, width=520, height=200)
-    
+
     # FOOTER
     c.setFont("Helvetica-Oblique", 9)
     c.drawString(50, 30, "Confidential – MRI ROI Simulation")
-    
+
     c.save()
-    
+
+    # CLEANUP charts (keep PDF)
+    for path in [profit_chart_path, rev_chart_path]:
+        if os.path.exists(path):
+            os.remove(path)
+
     return pdf_file.name
      
     
@@ -299,12 +321,12 @@ def create_pdf():
 # DOWNLOAD BUTTON (FUORI dalla funzione)
 # =============================
 if st.button("Export PDF Report"):
-   pdf_file = create_pdf()
-    
+    pdf_file = create_pdf()
+
     with open(pdf_file, "rb") as f:
         st.download_button(
-        "Download Report",
-        data=f,
-        file_name="MRI_ROI_Report.pdf",
-        mime="application/pdf"
-                )
+            "Download Report",
+            data=f,
+            file_name="MRI_ROI_Report.pdf",
+            mime="application/pdf"
+        )
