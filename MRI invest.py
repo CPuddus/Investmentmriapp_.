@@ -322,3 +322,4 @@ if st.session_state.pdf:
         data=st.session_state.pdf,
         file_name="MRI_ROI_Report.pdf",
         mime="application/pdf"
+    )
