@@ -276,7 +276,7 @@ def create_pdf():
 
     # HEADER
     c.setFont("Helvetica-Bold", 18)
-    c.drawString(150, 770, "MRI ROI Report")
+    c.drawString(250, 780, "MRI ROI Report")
 
     # LOGO (safe)
     try:
@@ -286,18 +286,18 @@ def create_pdf():
         )
         response.raise_for_status()
         img = ImageReader(BytesIO(response.content))
-        c.drawImage(img, 380, 780, width=70, height=15)
+        c.drawImage(img, 480, 780, width=70, height=15)
     except Exception:
         pass  # don't crash if logo fails
 
     # KPI
     c.setFont("Helvetica", 12)
-    c.drawString(50, 760, f"Revenue: {format_currency(df['Revenues'].iloc[-1], currency_symbol, selected_currency)}")
-    c.drawString(50, 740, f"Profit: {format_currency(final_profit, currency_symbol, selected_currency)}")
-    c.drawString(50, 720, f"ROI: {roi:.1f}%")
+    c.drawString(250, 760, f"Revenue: {format_currency(df['Revenues'].iloc[-1], currency_symbol, selected_currency)}")
+    c.drawString(250, 740, f"Profit: {format_currency(final_profit, currency_symbol, selected_currency)}")
+    c.drawString(250, 720, f"ROI: {roi:.1f}%")
 
     if break_even:
-        c.drawString(50, 700, f"Break-even Year: {break_even}")
+        c.drawString(250, 700, f"Break-even Year: {break_even}")
 
     # CHARTS
     c.drawImage(rev_chart_path, 30, 400, width=520, height=300)
