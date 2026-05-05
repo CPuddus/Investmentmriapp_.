@@ -323,7 +323,7 @@ def create_pdf_client_ready():
         )
         response.raise_for_status()
         img = ImageReader(BytesIO(response.content))
-        c.drawImage(img, 50, 280, width=70, height=18)
+        c.drawImage(img, 350, 785, width=70, height=18)
     except Exception:
         pass  # don't crash if logo fails
 
@@ -356,7 +356,7 @@ def create_pdf_client_ready():
     # -----------------------------
     c.setFont("Helvetica-Bold", 12)
     c.setFillColorRGB(0.1, 0.1, 0.1)
-    c.drawString(50, 690, "Executive Summary")
+    c.drawString(50, 690, "Summary")
 
     c.setFont("Helvetica", 10)
     c.setFillColorRGB(0.35, 0.35, 0.35)
