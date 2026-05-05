@@ -78,6 +78,8 @@ currency_symbol = currency_options[selected_currency]["symbol"]
 # =============================
 # INPUTS
 # =============================
+st.markdown("### Investment")
+
 years = st.slider("Analysis Period (Years)",1,15,10)
 initial_investment = st.number_input("Initial Investment",0,20000000000,500000,10000)
 
@@ -85,11 +87,15 @@ leasing_pct = st.slider("Leasing %",0,100,80)
 leas_month = st.slider("Leasing Period (Months)", 12, 120, 60)
 interest_pct = st.slider("Interest %",0,15,5)
 
+st.markdown("### Recurring costs")
+
 technology_cost = st.number_input("Human Resouces Monthly",0,1000000000,2500,100)*12
 electricity_cost = st.number_input("Electricity Monthly",0,2000000000,5000,1000)*12
 maintenance_cost = st.number_input("Maintenance Annual",0,10000000000,20000,5000)
 
 reporting_pct = st.slider("Reporting Cost %",0,20,5)
+
+st.markdown("### Income")
 
 exams_per_day = st.slider("Exams per Day",1,30,12)
 working_days = st.slider("Working Days",1,365,200)
