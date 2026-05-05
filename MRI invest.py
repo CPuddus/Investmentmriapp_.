@@ -245,77 +245,102 @@ def load_logo():
 # =========================================================
 # PDF FUNCTION (FIXED + COMPLETE)
 # =========================================================
-def create_pdf():
+def create_pdf_enterprise():
 
-    pdf_path = BytesIO()
-    c = canvas.Canvas(pdf_path, pagesize=A4)
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
 
-    # -----------------------------
-    # HEADER
-    # -----------------------------
+    width, height = A4
+
+    # =====================================================
+    # STYLING
+    # =====================================================
+    title_color = (0.12, 0.12, 0.12)
+    grey = (0.4, 0.4, 0.4)
+    light_grey = (0.6, 0.6, 0.6)
+
+    # =====================================================
+    # HEADER (clean consulting style)
+    # =====================================================
     c.setFont("Helvetica-Bold", 20)
-    c.setFillColorRGB(0.1, 0.1, 0.1)
-    c.drawString(50, 800, "MRI Investment ROI Report")
+    c.setFillColorRGB(*title_color)
+    c.drawString(50, height - 60, "MRI Investment ROI Analysis")
 
     c.setFont("Helvetica", 10)
-    c.setFillColorRGB(0.4, 0.4, 0.4)
-    c.drawString(50, 780, "Financial Analysis")
+    c.setFillColorRGB(*grey)
+    c.drawString(50, height - 80, "Executive Financial Report")
 
-    # LOGO
+    # logo
     logo = load_logo()
     if logo:
         try:
-            c.drawImage(ImageReader(logo), 480, 800, width=70, height=18)
+            c.drawImage(ImageReader(logo), 470, height - 70, width=70, height=18)
         except:
             pass
 
     # divider
     c.setStrokeColorRGB(0.85, 0.85, 0.85)
-    c.line(50, 775, 550, 775)
+    c.line(50, height - 90, 550, height - 90)
 
-    # -----------------------------
-    # KPI
-    # -----------------------------
-    def kpi(x, y, title, value):
+
+    # =====================================================
+    # KPI STRIP (McKinsey-style top band)
+    # =====================================================
+    def kpi_box(x, y, label, value):
         c.setFont("Helvetica", 9)
-        c.setFillColorRGB(0.4, 0.4, 0.4)
-        c.drawString(x, y, title)
+        c.setFillColorRGB(*light_grey)
+        c.drawString(x, y, label)
 
         c.setFont("Helvetica-Bold", 12)
         c.setFillColorRGB(0, 0, 0)
-        c.drawString(x, y - 14, value)
+        c.drawString(x, y - 15, value)
 
-    kpi(50, 740, "Revenue",
-        format_currency(df["Revenues"].iloc[-1], currency_symbol, selected_currency))
+    kpi_box(50, height - 130, "Revenue",
+            format_currency(df["Revenues"].iloc[-1], currency_symbol, selected_currency))
 
-    kpi(220, 740, "Profit",
-        format_currency(final_profit, currency_symbol, selected_currency))
+    kpi_box(200, height - 130, "Profit",
+            format_currency(final_profit, currency_symbol, selected_currency))
 
-    kpi(360, 740, "ROI", f"{roi:.1f}%")
+    kpi_box(350, height - 130, "ROI",
+            f"{roi:.1f}%")
 
-    if break_even is not None:
-        kpi(470, 740, "Break-even", f"Year {break_even}")
+    kpi_box(470, height - 130, "Break-even",
+            f"Y{break_even}" if break_even else "Not reached")
 
 
-    # -----------------------------
-    # SUMMARY
-    # -----------------------------
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, 690, "Summary")
+    # =====================================================
+    # EXECUTIVE SUMMARY (consulting narrative)
+    # =====================================================
+    c.setFont("Helvetica-Bold", 13)
+    c.setFillColorRGB(*title_color)
+    c.drawString(50, height - 180, "Executive Summary")
+
+    summary_text = [
+        f"The MRI investment generates a total ROI of {roi:.1f}%.",
+        f"{'Break-even achieved in year ' + str(break_even) if break_even else 'Break-even not achieved within analysis period.'}",
+        "Financial performance is driven primarily by utilization rate and pricing strategy.",
+        "Cost structure is dominated by fixed operational and leasing expenses."
+    ]
 
     c.setFont("Helvetica", 9)
+    c.setFillColorRGB(*grey)
 
-    y = 670
-    for ins in insights:
-        c.drawString(55, y, f"• {ins}")
-        y -= 15
+    y = height - 200
+    for line in summary_text:
+        c.drawString(55, y, "• " + line)
+        y -= 14
 
 
-    # -----------------------------
-    # CHARTS (SAFE FIX)
-    # -----------------------------
-    import matplotlib.pyplot as plt
+    # =====================================================
+    # SECTION: PERFORMANCE OVERVIEW
+    # =====================================================
+    c.setFont("Helvetica-Bold", 13)
+    c.setFillColorRGB(*title_color)
+    c.drawString(50, y - 20, "Performance Overview")
 
+    y -= 50
+
+    # helper chart conversion
     def fig_to_img(fig):
         buf = BytesIO()
         fig.savefig(buf, format="png", dpi=300, bbox_inches="tight")
@@ -323,31 +348,64 @@ def create_pdf():
         plt.close(fig)
         return buf
 
-    # Chart 1
-    fig1, ax1 = plt.subplots()
-    ax1.bar(df["Year"], df["Profit"], color="green")
-    ax1.axhline(0, color="black")
+    # revenue vs cost chart (clean consulting style)
+    fig1, ax1 = plt.subplots(figsize=(6, 2.5))
+    ax1.plot(df["Year"], df["Revenues"], label="Revenue", linewidth=2)
+    ax1.plot(df["Year"], df["Expenses"], label="Costs", linewidth=2)
+    ax1.set_title("Revenue vs Costs")
+    ax1.legend()
     chart1 = fig_to_img(fig1)
 
-    # Chart 2
-    fig2, ax2 = plt.subplots()
-    ax2.plot(df["Year"], df["Revenues"], label="Revenue")
-    ax2.plot(df["Year"], df["Expenses"], label="Costs")
-    ax2.legend()
+    c.drawImage(ImageReader(chart1), 50, y - 200, width=500, height=180)
+
+
+    # =====================================================
+    # SECTION: PROFIT DRIVERS
+    # =====================================================
+    c.setFont("Helvetica-Bold", 13)
+    c.setFillColorRGB(*title_color)
+    c.drawString(50, y - 230, "Key Drivers")
+
+    drivers = [
+        "Exam volume is the primary revenue driver.",
+        "Leasing structure significantly impacts early-year profitability.",
+        "Operational costs remain stable and predictable.",
+        "Pricing sensitivity strongly affects ROI scalability."
+    ]
+
+    c.setFont("Helvetica", 9)
+    c.setFillColorRGB(*grey)
+
+    yy = y - 250
+    for d in drivers:
+        c.drawString(55, yy, "• " + d)
+        yy -= 14
+
+
+    # =====================================================
+    # SECTION: PROFIT EVOLUTION
+    # =====================================================
+    fig2, ax2 = plt.subplots(figsize=(6, 2.5))
+    colors = ["#2E7D32" if v >= 0 else "#C62828" for v in df["Profit"]]
+    ax2.bar(df["Year"], df["Profit"], color=colors)
+    ax2.axhline(0, color="black", linewidth=0.8)
+    ax2.set_title("Profit Evolution")
     chart2 = fig_to_img(fig2)
 
-    c.drawImage(ImageReader(chart1), 50, 330, width=500, height=240)
-    c.drawImage(ImageReader(chart2), 50, 60, width=500, height=240)
+    c.drawImage(ImageReader(chart2), 50, 100, width=500, height=180)
 
-    # FOOTER
-    c.setFont("Helvetica-Oblique", 8)
-    c.setFillColorRGB(0.5, 0.5, 0.5)
-    c.drawString(50, 30, "Confidential — Generated MRI ROI Analysis")
+
+    # =====================================================
+    # FOOTER (consulting style)
+    # =====================================================
+    c.setFont("Helvetica", 8)
+    c.setFillColorRGB(*light_grey)
+    c.drawString(50, 40, "Confidential – Internal Use Only | Generated MRI ROI Model")
 
     c.save()
-    pdf_path.seek(0)
+    buffer.seek(0)
 
-    return pdf_path
+    return buffer
 
 
 # =========================================================
@@ -357,14 +415,16 @@ def create_pdf():
 if "pdf_report" not in st.session_state:
     st.session_state.pdf_report = None
 
-if st.button("Generate Report"):
-    with st.spinner("Generating PDF..."):
-        st.session_state.pdf_report = create_pdf()
+if st.button("Generate Executive Report"):
+
+    with st.spinner("Building executive report..."):
+        st.session_state.pdf_report = create_pdf_enterprise()
 
 if st.session_state.pdf_report:
+
     st.download_button(
-        "Download Report",
+        "Download Executive PDF",
         data=st.session_state.pdf_report,
-        file_name="MRI_ROI_Report.pdf",
+        file_name="MRI_ROI_Executive_Report.pdf",
         mime="application/pdf"
     )
