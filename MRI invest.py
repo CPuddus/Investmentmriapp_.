@@ -307,7 +307,7 @@ def create_pdf_client_ready():
 
     c.setFont("Helvetica", 10)
     c.setFillColorRGB(0.4, 0.4, 0.4)
-    c.drawString(50, 800, "Financial Analysis")
+    c.drawString(50, 780, "Financial Analysis")
 
     # LOGO (safe)
     try:
@@ -317,7 +317,7 @@ def create_pdf_client_ready():
         )
         response.raise_for_status()
         img = ImageReader(BytesIO(response.content))
-        c.drawImage(img, 480, 785, width=70, height=18)
+        c.drawImage(img, 480, 800, width=70, height=18)
     except Exception:
         pass  # don't crash if logo fails
 
@@ -367,8 +367,8 @@ def create_pdf_client_ready():
     c.setFillColorRGB(0.1, 0.1, 0.1)
     c.drawString(50, 600, "Financial Performance")
 
-    c.drawImage(ImageReader(chart1), 50, 330, width=500, height=250)
-    c.drawImage(ImageReader(chart2), 50, 60, width=500, height=250)
+    c.drawImage(ImageReader(chart1), 50, 330, width=500, height=240)
+    c.drawImage(ImageReader(chart2), 50, 60, width=500, height=240)
 
     # -----------------------------
     # FOOTER
