@@ -201,66 +201,8 @@ profit_chart = alt.Chart(df).mark_bar().encode(
 )
 
 st.altair_chart(profit_chart, use_container_width=True)
-
+ 
 # =============================
-# PDF
-# =============================
-def create_pdf():
-    import tempfile
-    import matplotlib.pyplot as plt
-
-    # =============================
-    # PROFIT CHART
-    # =============================
-    profit_chart_path = tempfile.NamedTemporaryFile(delete=False, suffix=".png").name
-
-    plt.figure(figsize=(8,4))
-    for i, v in enumerate(df["Profit"]):
-        color = ESAOTE_GREEN if v >= 0 else "red"
-        plt.bar(df["Year"][i], v, color=color)
-
-    plt.axhline(0)
-    if break_even:
-        plt.axvline(break_even, linestyle="--")
-
-    plt.title("Annual Profit")
-    plt.xlabel("Year")
-    plt.ylabel(f"Profit ({currency_symbol})")
-
-    plt.gca().yaxis.set_major_formatter(
-        plt.FuncFormatter(lambda x, _: f"{x:,.0f}")
-    )
-
-    plt.tight_layout()
-    plt.savefig(profit_chart_path, dpi=300)
-    plt.close()
-
-    # =============================
-    # REVENUE vs EXPENSES
-    # =============================
-    rev_chart_path = tempfile.NamedTemporaryFile(delete=False, suffix=".png").name
-
-    plt.figure(figsize=(8,4))
-    plt.plot(df["Year"], df["Revenues"], label="Revenue", linewidth=2)
-    plt.plot(df["Year"], df["Expenses"], label="Expenses", linewidth=2)
-
-    plt.title("Revenue vs Expenses")
-    plt.xlabel("Year")
-    plt.ylabel(f"Value ({currency_symbol})")
-    plt.legend()
-
-    plt.gca().yaxis.set_major_formatter(
-        plt.FuncFormatter(lambda x, _: f"{x:,.0f}")
-    )
-
-    plt.tight_layout()
-    plt.savefig(rev_chart_path, dpi=300)
-    plt.close()
-
-    # =============================
-    # PDF
-    # =============================
-   # =============================
 # PDF
 # =============================
 def create_pdf():
