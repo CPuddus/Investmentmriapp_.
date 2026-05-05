@@ -286,7 +286,7 @@ def create_pdf():
         )
         response.raise_for_status()
         img = ImageReader(BytesIO(response.content))
-        c.drawImage(img, 480, 780, width=70, height=15)
+        c.drawImage(img, 50, 780, width=70, height=18)
     except Exception:
         pass  # don't crash if logo fails
 
