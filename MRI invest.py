@@ -256,10 +256,10 @@ def create_pdf():
     plt.savefig(rev_chart_path, dpi=300)
     plt.close()
 
-    # =============================
-    # PDF
-    # =============================
-   pdf_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+# =============================
+# PDF
+# =============================
+pdf_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
 pdf_file.close()
 
 c = canvas.Canvas(pdf_file.name, pagesize=A4)
