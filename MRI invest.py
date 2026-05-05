@@ -292,12 +292,12 @@ def create_pdf():
 
     # KPI
     c.setFont("Helvetica", 12)
-    c.drawString(250, 760, f"Revenue: {format_currency(df['Revenues'].iloc[-1], currency_symbol, selected_currency)}")
-    c.drawString(250, 740, f"Profit: {format_currency(final_profit, currency_symbol, selected_currency)}")
-    c.drawString(250, 720, f"ROI: {roi:.1f}%")
+    c.drawString(260, 760, f"Revenue: {format_currency(df['Revenues'].iloc[-1], currency_symbol, selected_currency)}")
+    c.drawString(260, 740, f"Profit: {format_currency(final_profit, currency_symbol, selected_currency)}")
+    c.drawString(260, 720, f"ROI: {roi:.1f}%")
 
     if break_even:
-        c.drawString(250, 700, f"Break-even Year: {break_even}")
+        c.drawString(260, 700, f"Break-even Year: {break_even}")
 
     # CHARTS
     c.drawImage(rev_chart_path, 30, 400, width=520, height=275)
