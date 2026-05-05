@@ -301,7 +301,7 @@ def create_pdf():
 
     # CHARTS
     c.drawImage(rev_chart_path, 30, 400, width=520, height=250)
-    c.drawImage(profit_chart_path, 30, 150, width=820, height=250)
+    c.drawImage(profit_chart_path, 30, 50, width=520, height=250)
 
     # FOOTER
     c.setFont("Helvetica-Oblique", 9)
