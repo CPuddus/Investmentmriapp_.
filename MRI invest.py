@@ -259,52 +259,52 @@ def create_pdf():
 # =============================
 # PDF
 # =============================
-pdf_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
-pdf_file.close()
-
-c = canvas.Canvas(pdf_file.name, pagesize=A4)
-
-# HEADER
-c.setFont("Helvetica-Bold", 18)
-c.drawString(50, 800, "MRI ROI Report")
-
-# Load image from URL
-response = requests.get("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s")
-img = ImageReader(BytesIO(response.content))
-c.drawImage(img, 380, 780, width=150, height=50)
-
-# KPI
-c.setFont("Helvetica", 12)
-c.drawString(50, 760, f"Revenue: {format_currency(df['Revenues'].iloc[-1], currency_symbol, selected_currency)}")
-c.drawString(50, 740, f"Profit: {format_currency(final_profit, currency_symbol, selected_currency)}")
-c.drawString(50, 720, f"ROI: {roi:.1f}%")
-
-if break_even:
-    c.drawString(50, 700, f"Break-even Year: {break_even}")
-
-# CHARTS
-c.drawImage(rev_chart_path, 40, 400, width=520, height=200)
-c.drawImage(profit_chart_path, 40, 150, width=520, height=200)
-
-# FOOTER
-c.setFont("Helvetica-Oblique", 9)
-c.drawString(50, 30, "Confidential – MRI ROI Simulation")
-
-c.save()
-
-return pdf_file.name
- 
-
-# =============================
-# DOWNLOAD BUTTON (FUORI dalla funzione)
-# =============================
-if st.button("Export PDF Report"):
-    pdf_file = create_pdf()
-
-    with open(pdf_file, "rb") as f:
-        st.download_button(
-            "Download Report",
-            data=f,
-            file_name="MRI_ROI_Report.pdf",
-            mime="application/pdf"
-        )
+    pdf_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+    pdf_file.close()
+    
+    c = canvas.Canvas(pdf_file.name, pagesize=A4)
+    
+    # HEADER
+    c.setFont("Helvetica-Bold", 18)
+    c.drawString(50, 800, "MRI ROI Report")
+    
+    # Load image from URL
+    response = requests.get("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s")
+    img = ImageReader(BytesIO(response.content))
+    c.drawImage(img, 380, 780, width=150, height=50)
+    
+    # KPI
+    c.setFont("Helvetica", 12)
+    c.drawString(50, 760, f"Revenue: {format_currency(df['Revenues'].iloc[-1], currency_symbol, selected_currency)}")
+    c.drawString(50, 740, f"Profit: {format_currency(final_profit, currency_symbol, selected_currency)}")
+    c.drawString(50, 720, f"ROI: {roi:.1f}%")
+    
+    if break_even:
+        c.drawString(50, 700, f"Break-even Year: {break_even}")
+    
+    # CHARTS
+    c.drawImage(rev_chart_path, 40, 400, width=520, height=200)
+    c.drawImage(profit_chart_path, 40, 150, width=520, height=200)
+    
+    # FOOTER
+    c.setFont("Helvetica-Oblique", 9)
+    c.drawString(50, 30, "Confidential – MRI ROI Simulation")
+    
+    c.save()
+    
+    return pdf_file.name
+     
+    
+    # =============================
+    # DOWNLOAD BUTTON (FUORI dalla funzione)
+    # =============================
+    if st.button("Export PDF Report"):
+        pdf_file = create_pdf()
+    
+        with open(pdf_file, "rb") as f:
+            st.download_button(
+                "Download Report",
+                data=f,
+                file_name="MRI_ROI_Report.pdf",
+                mime="application/pdf"
+            )
