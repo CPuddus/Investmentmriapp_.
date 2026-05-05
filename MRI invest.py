@@ -286,7 +286,7 @@ def create_pdf():
         )
         response.raise_for_status()
         img = ImageReader(BytesIO(response.content))
-        c.drawImage(img, 380, 780, width=150, height=30)
+        c.drawImage(img, 380, 780, width=150, height=40)
     except Exception:
         pass  # don't crash if logo fails
 
@@ -300,8 +300,8 @@ def create_pdf():
         c.drawString(50, 700, f"Break-even Year: {break_even}")
 
     # CHARTS
-    c.drawImage(rev_chart_path, 70, 400, width=520, height=200)
-    c.drawImage(profit_chart_path, 70, 150, width=520, height=200)
+    c.drawImage(rev_chart_path, 30, 400, width=520, height=200)
+    c.drawImage(profit_chart_path, 30, 150, width=520, height=200)
 
     # FOOTER
     c.setFont("Helvetica-Oblique", 9)
