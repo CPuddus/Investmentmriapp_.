@@ -307,7 +307,7 @@ def create_pdf_client_ready():
 
     c.setFont("Helvetica", 10)
     c.setFillColorRGB(0.4, 0.4, 0.4)
-    c.drawString(50, 785, "Financial Analysis")
+    c.drawString(50, 800, "Financial Analysis")
 
     # LOGO (safe)
     try:
@@ -367,8 +367,8 @@ def create_pdf_client_ready():
     c.setFillColorRGB(0.1, 0.1, 0.1)
     c.drawString(50, 600, "Financial Performance")
 
-    c.drawImage(ImageReader(chart1), 50, 350, width=500, height=240)
-    c.drawImage(ImageReader(chart2), 50, 80, width=500, height=240)
+    c.drawImage(ImageReader(chart1), 50, 350, width=500, height=250)
+    c.drawImage(ImageReader(chart2), 50, 80, width=500, height=250)
 
     # -----------------------------
     # FOOTER
