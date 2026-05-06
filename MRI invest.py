@@ -1,4 +1,240 @@
-v
+import streamlit as st
+import pandas as pd
+import altair as alt
+
+ESAOTE_GREEN = "#6CC24A"
+LOGO_URL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s"
+
+
+# =============================
+# CURRENCY FORMAT
+# =============================
+def format_currency(value, symbol, currency_key):
+    abs_val = abs(value)
+
+    if "INR" in currency_key:
+        if abs_val >= 1e7:
+            return f"{symbol}{value/1e7:.2f} Cr"
+        elif abs_val >= 1e5:
+            return f"{symbol}{value/1e5:.2f} L"
+        return f"{symbol}{value:,.0f}"
+
+    if any(x in currency_key for x in ["JPY", "KRW", "VND", "IDR"]):
+        return f"{symbol}{value:,.0f}"
+
+    return f"{symbol}{value:,.2f}"
+
+
+# =============================
+# HEADER
+# =============================
+col1, col2 = st.columns([1, 5])
+
+with col1:
+    st.image(LOGO_URL, width=140)
+
+with col2:
+    st.markdown("<h1>Esaote MRI – ROI Simulator</h1>", unsafe_allow_html=True)
+
+
+# =============================
+# CURRENCY
+# =============================
+currency_options = {
+    "EUR (€)": {"rate": 1.0, "symbol": "€"},
+    "USD ($)": {"rate": 1.08, "symbol": "$"},
+    "GBP (£)": {"rate": 0.85, "symbol": "£"},
+    "JPY (¥)": {"rate": 160.0, "symbol": "¥"},
+    "INR (₹)": {"rate": 90.0, "symbol": "₹"},
+    "KRW (₩)": {"rate": 1450.0, "symbol": "₩"},
+    "VND (₫)": {"rate": 27000.0, "symbol": "₫"},
+    "IDR (Rp)": {"rate": 17000.0, "symbol": "Rp"}
+}
+
+selected_currency = st.selectbox("Select Currency", list(currency_options.keys()))
+exchange_rate = currency_options[selected_currency]["rate"]
+currency_symbol = currency_options[selected_currency]["symbol"]
+
+
+# =============================
+# INPUTS
+# =============================
+years = st.slider("Analysis Period (Years)", 1, 15, 10)
+initial_investment = st.number_input("Initial Investment", 0, 20000000000, 500000)
+
+leasing_pct = st.slider("Leasing %", 0, 100, 80)
+leas_month = st.slider("Leasing Period (Months)", 12, 120, 60)
+interest_pct = st.slider("Interest %", 0, 15, 5)
+
+technology_cost = st.number_input("HR Monthly", 0, 1000000000, 2500) * 12
+electricity_cost = st.number_input("Electricity Monthly", 0, 2000000000, 5000) * 12
+maintenance_cost = st.number_input("Maintenance Annual", 0, 10000000000, 20000)
+
+reporting_pct = st.slider("Reporting Cost %", 0, 20, 5)
+
+exams_per_day = st.slider("Exams per Day", 1, 30, 12)
+working_days = st.slider("Working Days", 1, 365, 200)
+average_price = st.number_input("Average Exam Price", 0, 1500000, 500)
+
+annual_revenue = exams_per_day * working_days * average_price
+reporting_cost = annual_revenue * reporting_pct / 100
+
+
+# =============================
+# LEASING MODEL
+# =============================
+leasing_amount = initial_investment * leasing_pct / 100
+r_month = (interest_pct / 100) / 12
+
+if r_month > 0 and leas_month > 0:
+    monthly_payment = leasing_amount * (
+        r_month * (1 + r_month) ** leas_month
+    ) / ((1 + r_month) ** leas_month - 1)
+else:
+    monthly_payment = leasing_amount / max(leas_month, 1)
+
+
+# =============================
+# MODEL
+# =============================
+@st.cache_data
+def calculate_financials(
+    years,
+    initial_investment,
+    annual_revenue,
+    technology_cost,
+    electricity_cost,
+    maintenance_cost,
+    reporting_cost,
+    monthly_payment,
+    leas_month
+):
+
+    expenses = [initial_investment]
+    revenues = [0]
+
+    cumulative_cost = initial_investment
+    cumulative_rev = 0
+
+    for y in range(1, years + 1):
+
+        months_used = min(12, max(0, leas_month - (y - 1) * 12))
+        leasing_cost = months_used * monthly_payment
+
+        yearly_cost = (
+            technology_cost +
+            electricity_cost +
+            maintenance_cost +
+            leasing_cost +
+            reporting_cost
+        )
+
+        cumulative_cost += yearly_cost
+        cumulative_rev += annual_revenue
+
+        expenses.append(cumulative_cost)
+        revenues.append(cumulative_rev)
+
+    df = pd.DataFrame({
+        "Year": range(0, years + 1),
+        "Expenses": expenses,
+        "Revenues": revenues
+    })
+
+    df["Profit"] = df["Revenues"] - df["Expenses"]
+    return df
+
+
+df = calculate_financials(
+    years,
+    initial_investment,
+    annual_revenue,
+    technology_cost,
+    electricity_cost,
+    maintenance_cost,
+    reporting_cost,
+    monthly_payment,
+    leas_month
+)
+
+
+# =============================
+# KPI
+# =============================
+final_profit = df["Profit"].iloc[-1]
+roi = (final_profit / initial_investment) * 100 if initial_investment else 0
+
+
+# BREAK-EVEN (SAFE)
+break_even = None
+for i in range(1, len(df)):
+    if df["Profit"].iloc[i] >= 0:
+        prev = df["Profit"].iloc[i - 1]
+        curr = df["Profit"].iloc[i]
+
+        if curr != prev:
+            break_even = df["Year"].iloc[i - 1] + abs(prev) / (abs(curr - prev) + 1e-9)
+        else:
+            break_even = df["Year"].iloc[i]
+        break
+
+
+# =============================
+# DISPLAY
+# =============================
+st.markdown("## Financial Overview")
+
+display_profit = final_profit * exchange_rate
+display_rev = df["Revenues"].iloc[-1] * exchange_rate
+
+c1, c2, c3 = st.columns(3)
+
+c1.metric("Revenue", format_currency(display_rev, currency_symbol, selected_currency))
+c2.metric("Profit", format_currency(display_profit, currency_symbol, selected_currency))
+c3.metric("ROI", f"{roi:.1f}%")
+
+
+# =============================
+# CHARTS
+# =============================
+line_chart = alt.Chart(df).transform_fold(
+    ["Expenses", "Revenues"],
+    as_=["Type", "Value"]
+).mark_line().encode(
+    x="Year:O",
+    y="Value:Q",
+    color="Type:N"
+)
+
+st.altair_chart(line_chart, use_container_width=True)
+
+
+profit_chart = alt.Chart(df).mark_bar().encode(
+    x="Year:O",
+    y="Profit:Q",
+    color=alt.condition(
+        "datum.Profit >= 0",
+        alt.value(ESAOTE_GREEN),
+        alt.value("red")
+    )
+)
+
+st.altair_chart(profit_chart, use_container_width=True)
+
+
+# =============================
+# INSIGHTS
+# =============================
+trend = df["Profit"].diff().iloc[-3:].mean()
+
+insights = [
+    f"ROI: {roi:.1f}%",
+    f"Break-even: {'Year ' + str(round(break_even, 1)) if break_even else 'Not reached'}",
+    "Trend: " + ("Positive" if trend > 0 else "Negative")
+]
+
+st.markdown("## Insights")
+for i in insights:
     st.write("•", i)
 # =========================================================
 # PDF FUNCTION (FIXED + COMPLETE)
