@@ -327,7 +327,7 @@ def create_pdf_enterprise():
             pass
 
     c.setStrokeColorRGB(0.85, 0.85, 0.85)
-    c.line(350, height - 90, 550, height - 90)
+    c.line(250, height - 80, 550, height - 90)
 
     # =====================================================
     # KPI STRIP
