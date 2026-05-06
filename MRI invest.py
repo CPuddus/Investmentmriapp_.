@@ -393,45 +393,83 @@ def create_pdf_enterprise():
     # =====================================================
     # SECTION: PERFORMANCE OVERVIEW
     # =====================================================
-    c.setFont("Helvetica-Bold", 13)
-    c.setFillColorRGB(*title_color)
-    c.drawString(50, y - 20, "Performance Overview")
+from matplotlib.ticker import FuncFormatter
+from io import BytesIO
+from reportlab.lib.utils import ImageReader
+import matplotlib.pyplot as plt
 
-    y -= 50
+# =============================
+# FORMATTER VALUTA
+# =============================
+def currency_formatter(x, pos):
+    return format_currency(x, currency_symbol, selected_currency)
 
-    # helper chart conversion
-    def fig_to_img(fig):
-        buf = BytesIO()
-        fig.savefig(buf, format="png", dpi=300, bbox_inches="tight")
-        buf.seek(0)
-        plt.close(fig)
-        return buf
+formatter = FuncFormatter(currency_formatter)
 
-    # revenue vs cost chart (clean consulting style)
-    fig1, ax1 = plt.subplots(figsize=(6, 2.5))
+# =============================
+# TITLE
+# =============================
+c.setFont("Helvetica-Bold", 13)
+c.setFillColorRGB(*title_color)
+c.drawString(50, y - 20, f"Performance Overview ({currency_symbol})")
 
-    ax1.plot(df["Year"], df["Revenues"], label="Revenue", linewidth=2, color="#4daf4a")
-    ax1.plot(df["Year"], df["Expenses"], label="Costs", linewidth=2, color="#e41a1c")
-    
-    ax1.set_title("Revenue vs Costs")
-    ax1.legend()
-    
-    chart1 = fig_to_img(fig1)
-    
-    c.drawImage(ImageReader(chart1), 80, y - 200, width=400, height=200)
+y -= 50
 
+# =============================
+# HELPER
+# =============================
+def fig_to_img(fig):
+    buf = BytesIO()
+    fig.savefig(buf, format="png", dpi=300, bbox_inches="tight")
+    buf.seek(0)
+    plt.close(fig)
+    return buf
 
-    # =====================================================
-    # SECTION: PROFIT EVOLUTION
-    # =====================================================
-    fig2, ax2 = plt.subplots(figsize=(6, 2.5))
-    colors = ["#2E7D32" if v >= 0 else "#C62828" for v in df["Profit"]]
-    ax2.bar(df["Year"], df["Profit"], color=colors)
-    ax2.axhline(0, color="black", linewidth=0.8)
-    ax2.set_title("Profit Evolution")
-    chart2 = fig_to_img(fig2)
+# =====================================================
+# CHART 1: REVENUE vs COSTS
+# =====================================================
+fig1, ax1 = plt.subplots(figsize=(6, 2.5))
 
-    c.drawImage(ImageReader(chart2), 80, 70, width=400, height=200)
+ax1.plot(df["Year"], df["Revenues"], label="Revenue", linewidth=2, color="#4daf4a")
+ax1.plot(df["Year"], df["Expenses"], label="Costs", linewidth=2, color="#e41a1c")
+
+ax1.set_title(f"Revenue vs Costs ({currency_symbol})")
+
+# valuta asse Y
+ax1.yaxis.set_major_formatter(formatter)
+
+# stile consulting
+ax1.grid(True, linestyle="--", linewidth=0.5, alpha=0.7)
+ax1.spines[['top', 'right']].set_visible(False)
+
+# legenda dentro
+ax1.legend(loc="upper left")
+
+chart1 = fig_to_img(fig1)
+c.drawImage(ImageReader(chart1), 80, y - 200, width=400, height=200)
+
+y -= 220
+
+# =====================================================
+# CHART 2: PROFIT EVOLUTION
+# =====================================================
+fig2, ax2 = plt.subplots(figsize=(6, 2.5))
+
+colors = ["#2E7D32" if v >= 0 else "#C62828" for v in df["Profit"]]
+ax2.bar(df["Year"], df["Profit"], color=colors)
+
+ax2.axhline(0, color="black", linewidth=0.8)
+ax2.set_title(f"Profit Evolution ({currency_symbol})")
+
+# valuta asse Y
+ax2.yaxis.set_major_formatter(formatter)
+
+# stile consulting
+ax2.grid(True, linestyle="--", linewidth=0.5, alpha=0.7)
+ax2.spines[['top', 'right']].set_visible(False)
+
+chart2 = fig_to_img(fig2)
+c.drawImage(ImageReader(chart2), 80, 70, width=400, height=200)
 
 
     # =====================================================
