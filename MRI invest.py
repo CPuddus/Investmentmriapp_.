@@ -201,6 +201,7 @@ line_chart = alt.Chart(df).transform_fold(
     x="Year:O",
     y=alt.Y("value:Q", axis=alt.Axis(format="~s")),
     color=alt.condition(
+        alt.datum.Profit >= 0,
         alt.value(ESAOTE_GREEN),
         alt.value("red")
     )
