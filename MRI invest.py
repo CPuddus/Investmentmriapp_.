@@ -316,15 +316,15 @@ def create_pdf_enterprise():
     if logo:
         c.drawImage(
             logo,
-            x=350,              # posizione X (prova 50 o 400)
-            y=height - 60,    # posizione Y
+            x=60,              # posizione X (prova 50 o 400)
+            y=height - 350,    # posizione Y
             width=80,
             height=10,
             preserveAspectRatio=True,
             mask='auto'
         )
     
-    c.line(250, height - 80, 550, height - 80)
+    c.line(250, height - 90, 550, height - 80)
 
     # =====================================================
     # KPI STRIP
