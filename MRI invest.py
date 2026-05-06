@@ -203,13 +203,17 @@ c3.metric("ROI", f"{roi:.1f}%")
 # =============================
 # CHARTS
 # =============================
-label_expr = f"'{currency_symbol}' + format(datum.value, ',.0f')"
+label_expr = f"'{currency_symbol}' + format(datum.value, ',')"
 
 line_chart = alt.Chart(df).transform_fold(
     ["Expenses", "Revenues"],
     as_=["Type", "Value"]
 ).mark_line().encode(
-    x=alt.X("Year:O", title="Year"),
+    x=alt.X(
+        "Year:O",
+        title="Year",
+        axis=alt.Axis(labelAngle=90, labelAlign="left")
+    ),
     y=alt.Y(
         "Value:Q",
         axis=alt.Axis(labelExpr=label_expr)
@@ -221,12 +225,12 @@ line_chart = alt.Chart(df).transform_fold(
             range=["red", "green"]
         ),
         legend=alt.Legend(
-            orient="none",              # ❗ disattiva posizione standard
-            legendX=10,                 # posizione interna
+            orient="none",
+            legendX=10,
             legendY=10,
             direction="vertical",
             title="Cashflow",
-            fillColor="white",          # sfondo leggibile
+            fillColor="white",
             strokeColor="lightgray"
         )
     ),
@@ -241,7 +245,10 @@ st.altair_chart(line_chart, use_container_width=True)
 
 
 profit_chart = alt.Chart(df).mark_bar().encode(
-    x="Year:O",
+    x=alt.X(
+        "Year:O",
+        axis=alt.Axis(labelAngle=90, labelAlign="left")
+    ),
     y="Profit:Q",
     color=alt.condition(
         "datum.Profit >= 0",
