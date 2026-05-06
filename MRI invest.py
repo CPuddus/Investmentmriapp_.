@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
+from io import BytesIO
+import matplotlib.pyplot as plt
 
 ESAOTE_GREEN = "#6CC24A"
 LOGO_URL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s"
@@ -469,8 +471,8 @@ if st.button("Generate Report"):
 if st.session_state.pdf_report is not None:
 
     st.download_button(
-        label="Download PDF",
-        data=st.session_state.pdf_report,
-        file_name="MRI_ROI_Report.pdf",
-        mime="application/pdf"
-    )
+    label="Download PDF",
+    data=st.session_state.pdf_report,
+    file_name="MRI_ROI_Report.pdf",
+    mime="application/pdf"
+)
