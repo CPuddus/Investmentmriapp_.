@@ -193,29 +193,46 @@ c3.metric("ROI", f"{roi:.1f}%")
 # =============================
 # CHARTS
 # =============================
+label_expr = f"'{currency_symbol}' + format(datum.value, ',.0f')"
+
 line_chart = alt.Chart(df).transform_fold(
-    ["Expenses", "Revenues"]
+    ["Expenses", "Revenues"],
+    as_=["Type", "Value"]
 ).mark_line().encode(
-    x="Year:O",
-    y=alt.Y("value:Q", axis=alt.Axis(format="~s")),
+    x=alt.X("Year:O", title="Year"),
+    y=alt.Y(
+        "Value:Q",
+        axis=alt.Axis(labelExpr=label_expr)
+    ),
     color=alt.Color(
-        "key:N",
+        "Type:N",
         scale=alt.Scale(
             domain=["Expenses", "Revenues"],
             range=["red", "green"]
-        )
+        ),
+        legend=alt.Legend(orient="top-left")
     )
 )
-
 st.altair_chart(line_chart, use_container_width=True)
 
-profit_chart = alt.Chart(df).mark_bar().encode(
-    x="Year:O",
-    y="Profit:Q",
-    color=alt.condition(
-        "datum.Profit >= 0",
-        alt.value(ESAOTE_GREEN),
-        alt.value("red")
+label_expr = f"'{currency_symbol}' + format(datum.value, ',.0f')"
+
+line_chart = alt.Chart(df).transform_fold(
+    ["Expenses", "Revenues"],
+    as_=["Type", "Value"]
+).mark_line().encode(
+    x=alt.X("Year:O", title="Year"),
+    y=alt.Y(
+        "Value:Q",
+        axis=alt.Axis(labelExpr=label_expr)
+    ),
+    color=alt.Color(
+        "Type:N",
+        scale=alt.Scale(
+            domain=["Expenses", "Revenues"],
+            range=["red", "green"]
+        ),
+        legend=alt.Legend(orient="top-left")
     )
 )
 st.altair_chart(profit_chart, use_container_width=True)
