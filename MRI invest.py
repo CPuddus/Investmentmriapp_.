@@ -363,7 +363,7 @@ def create_pdf_enterprise():
     # =====================================================
     c.setFont("Helvetica-Bold", 13)
     c.setFillColorRGB(*title_color)
-    c.drawString(50, height - 180, "Summary")
+    c.drawString(50, 400, "Summary")
 
     summary_text = [
         f"The MRI investment generates a total ROI of {roi:.1f}%.",
@@ -383,7 +383,7 @@ def create_pdf_enterprise():
     # =====================================================
     c.setFont("Helvetica-Bold", 13)
     c.setFillColorRGB(*title_color)
-    c.drawString(320, height - 180, "Key Assumptions")
+    c.drawString(320, 400, "Key Assumptions")
 
     c.setFont("Helvetica", 9)
     c.setFillColorRGB(*grey)
@@ -471,26 +471,6 @@ def create_pdf_enterprise():
     buffer.seek(0)
 
     return buffer
-
-# =========================================================
-# DOWNLOAD
-# =========================================================
-
-if "pdf_report" not in st.session_state:
-    st.session_state.pdf_report = None
-
-
-# =============================
-# GENERATE REPORT
-# =============================
-if st.button("Generate Report"):
-
-    with st.spinner("Building report..."):
-        try:
-            st.session_state.pdf_report = create_pdf_enterprise()
-        except Exception as e:
-            st.error(f"Report generation failed: {e}")
-            st.session_state.pdf_report = None
 
 
 # =============================
