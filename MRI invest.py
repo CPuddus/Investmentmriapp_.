@@ -3,8 +3,6 @@ import pandas as pd
 import altair as alt
 import requests
 from io import BytesIO
-from PIL import Image
-import matplotlib.pyplot as plt
 
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
@@ -12,6 +10,7 @@ from reportlab.lib.utils import ImageReader
 
 ESAOTE_GREEN = "#6CC24A"
 LOGO_URL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s"
+
 
 # =============================
 # CURRENCY FORMAT
@@ -103,18 +102,7 @@ reporting_cost = annual_revenue * reporting_pct / 100
 
 
 # =============================
-# CONVERT CURRENCY
-# =============================
-initial_investment *= exchange_rate
-annual_revenue *= exchange_rate
-technology_cost *= exchange_rate
-electricity_cost *= exchange_rate
-maintenance_cost *= exchange_rate
-reporting_cost *= exchange_rate
-
-
-# =============================
-# LEASING
+# LEASING MODEL (FIXED)
 # =============================
 leasing_amount = initial_investment * leasing_pct / 100
 r_month = (interest_pct / 100) / 12
@@ -126,14 +114,23 @@ if r_month > 0:
 else:
     monthly_payment = leasing_amount / leas_month
 
-annual_leasing_payment = monthly_payment * 12
-leasing_years = int(leas_month / 12)
 
 # =============================
-# MODEL
+# MODEL (FIXED CACHE)
 # =============================
 @st.cache_data
-def calculate_financials():
+def calculate_financials(
+    years,
+    initial_investment,
+    annual_revenue,
+    technology_cost,
+    electricity_cost,
+    maintenance_cost,
+    reporting_cost,
+    monthly_payment,
+    leas_month
+):
+
     expenses = [initial_investment]
     revenues = [0]
 
@@ -142,7 +139,9 @@ def calculate_financials():
 
     for y in range(1, years + 1):
 
-        leasing_cost = annual_leasing_payment if (y - 1) * 12 < leas_month else 0
+        months_remaining = max(0, leas_month - (y - 1) * 12)
+        leasing_cost = min(months_remaining, 12) * monthly_payment
+
         yearly_cost = (
             technology_cost +
             electricity_cost +
@@ -164,29 +163,53 @@ def calculate_financials():
     })
 
     df["Profit"] = df["Revenues"] - df["Expenses"]
+    df["Cashflow"] = df["Profit"]
+
     return df
 
 
-df = calculate_financials()
+df = calculate_financials(
+    years,
+    initial_investment,
+    annual_revenue,
+    technology_cost,
+    electricity_cost,
+    maintenance_cost,
+    reporting_cost,
+    monthly_payment,
+    leas_month
+)
 
 
 # =============================
-# KPI
+# KPI (FIXED LOGIC)
 # =============================
 final_profit = df["Profit"].iloc[-1]
 
-# ROI FIXED (currency-neutral logic)
-roi = (final_profit / initial_investment) * 100 if initial_investment > 0 else 0
+roi = (final_profit / initial_investment) * 100 if initial_investment else 0
 
-break_even = next((df["Year"].iloc[i] for i in range(len(df)) if df["Profit"].iloc[i] >= 0), None)
+# BREAK EVEN (INTERPOLATED)
+break_even = None
+for i in range(1, len(df)):
+    if df["Profit"].iloc[i] >= 0:
+        prev = df["Profit"].iloc[i - 1]
+        curr = df["Profit"].iloc[i]
+        break_even = df["Year"].iloc[i - 1] + abs(prev) / (abs(curr - prev) + 1e-9)
+        break
 
 
+# =============================
+# DISPLAY (CURRENCY FIXED HERE)
+# =============================
 st.markdown("## Financial Overview")
+
+display_profit = final_profit * exchange_rate
+display_rev = df["Revenues"].iloc[-1] * exchange_rate
 
 c1, c2, c3 = st.columns(3)
 
-c1.metric("Revenue", format_currency(df['Revenues'].iloc[-1], currency_symbol, selected_currency))
-c2.metric("Profit", format_currency(final_profit, currency_symbol, selected_currency))
+c1.metric("Revenue", format_currency(display_rev, currency_symbol, selected_currency))
+c2.metric("Profit", format_currency(display_profit, currency_symbol, selected_currency))
 c3.metric("ROI", f"{roi:.1f}%")
 
 
@@ -199,80 +222,42 @@ line_chart = alt.Chart(df).transform_fold(
     ["Expenses", "Revenues"],
     as_=["Type", "Value"]
 ).mark_line().encode(
-    x=alt.X("Year:O", title="Year"),
-    y=alt.Y(
-        "Value:Q",
-        axis=alt.Axis(labelExpr=label_expr)
-    ),
-    color=alt.Color(
-        "Type:N",
-        scale=alt.Scale(
-            domain=["Expenses", "Revenues"],
-            range=["red", "green"]
-        ),
-        legend=alt.Legend(orient="top-left")
-    ),
-    tooltip=[
-        alt.Tooltip("Year:O", title="Year"),
-        alt.Tooltip("Type:N", title="Type"),
-        alt.Tooltip(
-            "Value:Q",
-            title=f"Amount ({currency_symbol})",
-            format=",.0f"
-        )
-    ]
+    x=alt.X("Year:O"),
+    y="Value:Q",
+    color="Type:N",
+    tooltip=["Year", "Type", "Value"]
 )
+
 st.altair_chart(line_chart, use_container_width=True)
 
+
 profit_chart = alt.Chart(df).mark_bar().encode(
-    x=alt.X("Year:O", title="Year"),
-    y=alt.Y(
-        "Profit:Q",
-        axis=alt.Axis(labelExpr=label_expr)
-    ),
+    x="Year:O",
+    y="Profit:Q",
     color=alt.condition(
         "datum.Profit >= 0",
         alt.value(ESAOTE_GREEN),
         alt.value("red")
-    ),
-    tooltip=[
-        alt.Tooltip("Year:O", title="Year"),
-        alt.Tooltip(
-            "Profit:Q",
-            title=f"Profit ({currency_symbol})",
-            format=",.0f"
-        )
-    ]
+    )
 )
+
 st.altair_chart(profit_chart, use_container_width=True)
 
 
-# =========================================================
-# INSIGHTS (mancava)
-# =========================================================
+# =============================
+# INSIGHTS (FIXED TREND)
+# =============================
+trend = df["Profit"].diff().iloc[-3:].mean()
+
 insights = [
-    f"ROI performance: {roi:.1f}%",
-    f"Break-even: {'Year ' + str(break_even) if break_even else 'Not reached'}",
-    "Trend: " + ("Positive" if df["Profit"].iloc[-3:].mean() > 0 else "Negative")
+    f"ROI: {roi:.1f}%",
+    f"Break-even: {'Year ' + str(round(break_even, 1)) if break_even else 'Not reached'}",
+    "Trend: " + ("Positive" if trend > 0 else "Negative")
 ]
 
 st.markdown("## Insights")
 for i in insights:
     st.write("•", i)
-
-# =========================================================
-# LOGO CACHE
-# =========================================================
-@st.cache_data
-def load_logo():
-    try:
-        r = requests.get(LOGO_URL, timeout=5)
-        r.raise_for_status()
-        return BytesIO(r.content)
-    except:
-        return None
-
-
 # =========================================================
 # PDF FUNCTION (FIXED + COMPLETE)
 # =========================================================
