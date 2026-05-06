@@ -466,7 +466,7 @@ def create_pdf_enterprise():
     ax2.spines[['top', 'right']].set_visible(False)
 
     chart2 = fig_to_img(fig2)
-    c.drawImage(ImageReader(chart2), 50, 120, width=470, height=220)
+    c.drawImage(ImageReader(chart2), 50, 110, width=470, height=220)
 
     # =====================================================
     # FOOTER
