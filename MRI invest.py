@@ -198,7 +198,13 @@ line_chart = alt.Chart(df).transform_fold(
 ).mark_line().encode(
     x="Year:O",
     y=alt.Y("value:Q", axis=alt.Axis(format="~s")),
-    color="key:N"
+    color=alt.Color(
+        "key:N",
+        scale=alt.Scale(
+            domain=["Expenses", "Revenues"],
+            range=["red", "green"]
+        )
+    )
 )
 
 st.altair_chart(line_chart, use_container_width=True)
@@ -376,12 +382,16 @@ def create_pdf_enterprise():
 
     # revenue vs cost chart (clean consulting style)
     fig1, ax1 = plt.subplots(figsize=(6, 2.5))
-    ax1.plot(df["Year"], df["Revenues"], label="Revenue", linewidth=2)
-    ax1.plot(df["Year"], df["Expenses"], label="Costs", linewidth=2)
+  fig1, ax1 = plt.subplots(figsize=(6, 2.5))
+
+    ax1.plot(df["Year"], df["Revenues"], label="Revenue", linewidth=2, color="#4daf4a")
+    ax1.plot(df["Year"], df["Expenses"], label="Costs", linewidth=2, color="#e41a1c")
+    
     ax1.set_title("Revenue vs Costs")
     ax1.legend()
+    
     chart1 = fig_to_img(fig1)
-
+    
     c.drawImage(ImageReader(chart1), 50, y - 220, width=500, height=250)
 
 
