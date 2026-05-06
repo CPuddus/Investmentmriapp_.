@@ -212,7 +212,7 @@ line_chart = alt.Chart(df).transform_fold(
     x=alt.X(
         "Year:O",
         title="Year",
-        axis=alt.Axis(labelAngle=90, labelAlign="left")
+        axis=alt.Axis(labelAngle=45, labelAlign="left")
     ),
     y=alt.Y(
         "Value:Q",
@@ -247,7 +247,7 @@ st.altair_chart(line_chart, use_container_width=True)
 profit_chart = alt.Chart(df).mark_bar().encode(
     x=alt.X(
         "Year:O",
-        axis=alt.Axis(labelAngle=90, labelAlign="left")
+        axis=alt.Axis(labelAngle=45, labelAlign="left")
     ),
     y="Profit:Q",
     color=alt.condition(
