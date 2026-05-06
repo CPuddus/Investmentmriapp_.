@@ -392,7 +392,7 @@ def create_pdf_enterprise():
     
     chart1 = fig_to_img(fig1)
     
-    c.drawImage(ImageReader(chart1), 50, y - 220, width=400, height=200)
+    c.drawImage(ImageReader(chart1), 80, y - 200, width=400, height=200)
 
 
     # =====================================================
@@ -405,7 +405,7 @@ def create_pdf_enterprise():
     ax2.set_title("Profit Evolution")
     chart2 = fig_to_img(fig2)
 
-    c.drawImage(ImageReader(chart2), 50, 70, width=400, height=200)
+    c.drawImage(ImageReader(chart2), 80, 70, width=400, height=200)
 
 
     # =====================================================
