@@ -204,21 +204,26 @@ line_chart = alt.Chart(df).transform_fold(
     as_=["Type", "Value"]
 ).mark_line().encode(
     x=alt.X("Year:O", title="Year"),
-
     y=alt.Y(
         "Value:Q",
         axis=alt.Axis(labelExpr=label_expr)
     ),
-
     color=alt.Color(
         "Type:N",
         scale=alt.Scale(
             domain=["Expenses", "Revenues"],
-            range=["red", "green"]   # 🔴 expenses, 🟢 revenues
+            range=["red", "green"]
         ),
-        legend=alt.Legend(title="Flow")
+        legend=alt.Legend(
+            orient="none",              # ❗ disattiva posizione standard
+            legendX=10,                 # posizione interna
+            legendY=10,
+            direction="vertical",
+            title="Flow",
+            fillColor="white",          # sfondo leggibile
+            strokeColor="lightgray"
+        )
     ),
-
     tooltip=[
         alt.Tooltip("Year:O"),
         alt.Tooltip("Type:N"),
