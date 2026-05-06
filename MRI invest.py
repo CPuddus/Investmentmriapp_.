@@ -211,30 +211,40 @@ line_chart = alt.Chart(df).transform_fold(
             range=["red", "green"]
         ),
         legend=alt.Legend(orient="top-left")
-    )
+    ),
+    tooltip=[
+        alt.Tooltip("Year:O", title="Year"),
+        alt.Tooltip("Type:N", title="Type"),
+        alt.Tooltip(
+            "Value:Q",
+            title=f"Amount ({currency_symbol})",
+            format=",.0f"
+        )
+    ]
 )
 st.altair_chart(line_chart, use_container_width=True)
 
-label_expr = f"'{currency_symbol}' + format(datum.value, ',.0f')"
-
-line_chart = alt.Chart(df).transform_fold(
-    ["Expenses", "Revenues"],
-    as_=["Type", "Value"]
-).mark_line().encode(
+profit_chart = alt.Chart(df).mark_bar().encode(
     x=alt.X("Year:O", title="Year"),
     y=alt.Y(
-        "Value:Q",
+        "Profit:Q",
         axis=alt.Axis(labelExpr=label_expr)
     ),
-    color=alt.Color(
-        "Type:N",
-        scale=alt.Scale(
-            domain=["Expenses", "Revenues"],
-            range=["red", "green"]
-        ),
-        legend=alt.Legend(orient="top-left")
-    )
+    color=alt.condition(
+        "datum.Profit >= 0",
+        alt.value(ESAOTE_GREEN),
+        alt.value("red")
+    ),
+    tooltip=[
+        alt.Tooltip("Year:O", title="Year"),
+        alt.Tooltip(
+            "Profit:Q",
+            title=f"Profit ({currency_symbol})",
+            format=",.0f"
+        )
+    ]
 )
+st.altair_chart(profit_chart, use_container_width=True)
 
 
 # =========================================================
