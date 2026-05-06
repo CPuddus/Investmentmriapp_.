@@ -333,25 +333,30 @@ def create_pdf_enterprise():
     # KPI STRIP
     # =====================================================
     def kpi_box(x, y, label, value):
-        c.setFont("Helvetica", 9)
-        c.setFillColorRGB(*light_grey)
-        c.drawString(x, y, label)
+    c.setFont("Helvetica", 9)
+    c.setFillColorRGB(*light_grey)
+    c.drawString(x, y, label)
 
-        c.setFont("Helvetica-Bold", 12)
-        c.setFillColorRGB(0, 0, 0)
-        c.drawString(x, y - 15, value)
+    c.setFont("Helvetica-Bold", 12)
+    c.setFillColorRGB(0, 0, 0)
+    c.drawString(x, y - 15, value)
 
-    kpi_box(50, height - 130, "Revenue",
-            format_currency(df["Revenues"].iloc[-1], currency_symbol, selected_currency))
 
-    kpi_box(200, height - 120, "Profit",
-            format_currency(final_profit, currency_symbol, selected_currency))
+# KPI BOXES
+kpi_box(50, height - 130,"Revenue", format_currency(df["Revenues"].iloc[-1], currency_symbol, selected_currency))
 
-    kpi_box(350, height - 120, "ROI",
-            f"{roi:.1f}%")
+kpi_box(200,height - 120,"Profit",format_currency(final_profit, currency_symbol, selected_currency))
 
-    kpi_box(470, height - 120, "Break-even",
-            f"Y{break_even}" if break_even else "Not reached")
+kpi_box(350,height - 120,"ROI",f"{roi:.1f}%")
+
+# ✅ FIXED BREAK-EVEN (1 decimal)
+break_even_value = (
+    f"Y{break_even:.1f}"
+    if break_even is not None
+    else "Not reached"
+)
+
+kpi_box(470,height - 120,"Break-even",break_even_value)
 
     # =====================================================
     # SUMMARY
