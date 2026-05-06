@@ -360,7 +360,7 @@ def create_pdf_enterprise():
     # =====================================================
     c.setFont("Helvetica-Bold", 13)
     c.setFillColorRGB(*title_color)
-    c.drawString(50, height - 150, "Summary")
+    c.drawString(50, height - 135, "Summary")
 
     summary_text = [
         f"The MRI investment generates a total ROI of {roi:.1f}%.",
@@ -370,7 +370,7 @@ def create_pdf_enterprise():
     c.setFont("Helvetica", 9)
     c.setFillColorRGB(*grey)
 
-    y = height - 165
+    y = height - 145
     for line in summary_text:
         c.drawString(55, y, "• " + line)
         y -= 14
@@ -380,7 +380,7 @@ def create_pdf_enterprise():
     # =====================================================
     c.setFont("Helvetica-Bold", 13)
     c.setFillColorRGB(*title_color)
-    c.drawString(320, height - 150, "Key Assumptions")
+    c.drawString(320, height - 135, "Key Assumptions")
 
     c.setFont("Helvetica", 9)
     c.setFillColorRGB(*grey)
@@ -396,7 +396,7 @@ def create_pdf_enterprise():
         f"Maintenance: {format_currency(maintenance_cost, currency_symbol, selected_currency)}",
     ]
 
-    y = height - 165
+    y = height - 145
     for a in assumptions:
         c.drawString(320, y, "• " + a)
         y -= 14
@@ -436,7 +436,7 @@ def create_pdf_enterprise():
     ax1.legend(loc="upper left")
 
     chart1 = fig_to_img(fig1)
-    c.drawImage(ImageReader(chart1), 80, 320, width=430, height=200)
+    c.drawImage(ImageReader(chart1), 80, 300, width=450, height=200)
 
     # =============================
     # CHART 2: PROFIT
@@ -455,7 +455,7 @@ def create_pdf_enterprise():
     ax2.spines[['top', 'right']].set_visible(False)
 
     chart2 = fig_to_img(fig2)
-    c.drawImage(ImageReader(chart2), 80, 70, width=430, height=200)
+    c.drawImage(ImageReader(chart2), 80, 90, width=450, height=200)
 
     # =====================================================
     # FOOTER
