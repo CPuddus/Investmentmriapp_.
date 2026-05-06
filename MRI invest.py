@@ -258,7 +258,6 @@ st.altair_chart(profit_chart, use_container_width=True)
 trend = df["Profit"].diff().iloc[-3:].mean()
 
 insights = [
-    f"ROI: {roi:.1f}%",
     f"Break-even: {'Year ' + str(round(break_even, 1)) if break_even else 'Not reached'}",
     "Trend: " + ("Positive" if trend > 0 else "Negative")
 ]
@@ -320,7 +319,7 @@ def create_pdf_enterprise():
             x=250,              # posizione X (prova 50 o 400)
             y=height - 60,    # posizione Y
             width=80,
-            height=40,
+            height=10,
             preserveAspectRatio=True,
             mask='auto'
         )
