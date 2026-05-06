@@ -197,13 +197,33 @@ c3.metric("ROI", f"{roi:.1f}%")
 # =============================
 # CHARTS
 # =============================
+label_expr = f"'{currency_symbol}' + format(datum.value, ',.0f')"
+
 line_chart = alt.Chart(df).transform_fold(
     ["Expenses", "Revenues"],
     as_=["Type", "Value"]
 ).mark_line().encode(
-    x="Year:O",
-    y="Value:Q",
-    color="Type:N"
+    x=alt.X("Year:O", title="Year"),
+
+    y=alt.Y(
+        "Value:Q",
+        axis=alt.Axis(labelExpr=label_expr)
+    ),
+
+    color=alt.Color(
+        "Type:N",
+        scale=alt.Scale(
+            domain=["Expenses", "Revenues"],
+            range=["red", "green"]   # 🔴 expenses, 🟢 revenues
+        ),
+        legend=alt.Legend(title="Flow")
+    ),
+
+    tooltip=[
+        alt.Tooltip("Year:O"),
+        alt.Tooltip("Type:N"),
+        alt.Tooltip("Value:Q", format=",.0f", title=f"Value ({currency_symbol})")
+    ]
 )
 
 st.altair_chart(line_chart, use_container_width=True)
