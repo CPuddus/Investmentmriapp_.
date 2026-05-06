@@ -341,7 +341,7 @@ def create_pdf_enterprise():
     # ASSUMPTIONS
     # =====================================================
     c.setFont("Helvetica-Bold", 13)
-    c.drawString(150, y - 30, "Key Assumptions")
+    c.drawString(300, height - 180, "Key Assumptions")
     
     c.setFont("Helvetica", 9)
     
