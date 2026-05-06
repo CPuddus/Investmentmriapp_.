@@ -341,6 +341,7 @@ def create_pdf_enterprise():
     # ASSUMPTIONS
     # =====================================================
     c.setFont("Helvetica-Bold", 13)
+    c.setFillColorRGB(*title_color)
     c.drawString(300, height - 180, "Key Assumptions")
     
     c.setFont("Helvetica", 9)
@@ -358,7 +359,7 @@ def create_pdf_enterprise():
     
     yy = y - 50
     for a in assumptions:
-        c.drawString(55, yy, "• " + a)
+        c.drawString(300, yy, "• " + a)
         yy -= 12
     
     y = yy - 10
