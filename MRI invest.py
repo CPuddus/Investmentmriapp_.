@@ -382,7 +382,6 @@ def create_pdf_enterprise():
 
     # revenue vs cost chart (clean consulting style)
     fig1, ax1 = plt.subplots(figsize=(6, 2.5))
-  fig1, ax1 = plt.subplots(figsize=(6, 2.5))
 
     ax1.plot(df["Year"], df["Revenues"], label="Revenue", linewidth=2, color="#4daf4a")
     ax1.plot(df["Year"], df["Expenses"], label="Costs", linewidth=2, color="#e41a1c")
