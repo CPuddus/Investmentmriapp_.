@@ -5,6 +5,7 @@ from io import BytesIO
 import matplotlib.pyplot as plt
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
+from reportlab.lib.utils import ImageReader
 
 ESAOTE_GREEN = "#6CC24A"
 LOGO_URL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s"
@@ -275,6 +276,7 @@ def create_pdf_enterprise():
 
     width, height = A4
 
+  
     # =====================================================
     # STYLING
     # =====================================================
@@ -297,11 +299,30 @@ def create_pdf_enterprise():
     c.setFillColorRGB(*grey)
     c.drawString(50, height - 80, "Financial Report")
 
+# =========================
+# DRAW LOGO
+# =========================
+
     # logo
-    logo = load_logo()
+    try:
+        r = requests.get(LOGO_URL, timeout=5)
+        logo = BytesIO(r.content)
+    except:
+        logo = None
+
+
+# =========================
+# DRAW LOGO
+# =========================
     if logo:
         try:
-            c.drawImage(ImageReader(logo), 470, height - 60, width=70, height=18)
+            c.drawImage(
+                ImageReader(logo),
+                470,
+                height - 60,
+                width=70,
+                height=18
+            )
         except:
             pass
 
