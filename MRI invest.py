@@ -142,7 +142,7 @@ def calculate_financials():
 
     for y in range(1, years + 1):
 
-    leasing_cost = annual_leasing_payment if (y - 1) * 12 < leas_month else 0
+        leasing_cost = annual_leasing_payment if (y - 1) * 12 < leas_month else 0
         yearly_cost = (
             technology_cost +
             electricity_cost +
