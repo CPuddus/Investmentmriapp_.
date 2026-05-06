@@ -404,16 +404,16 @@ import matplotlib.pyplot as plt
 def currency_formatter(x, pos):
     return format_currency(x, currency_symbol, selected_currency)
 
-formatter = FuncFormatter(currency_formatter)
-
-# =============================
-# TITLE
-# =============================
-c.setFont("Helvetica-Bold", 13)
-c.setFillColorRGB(*title_color)
-c.drawString(50, y - 20, f"Performance Overview ({currency_symbol})")
-
-y -= 50
+    formatter = FuncFormatter(currency_formatter)
+    
+    # =============================
+    # TITLE
+    # =============================
+    c.setFont("Helvetica-Bold", 13)
+    c.setFillColorRGB(*title_color)
+    c.drawString(50, y - 20, f"Performance Overview ({currency_symbol})")
+    
+    y -= 50
 
 # =============================
 # HELPER
