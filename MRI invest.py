@@ -317,8 +317,8 @@ def create_pdf_enterprise():
     if logo:
         c.drawImage(
         logo,
-        x=50,
-        y=height - 100,
+        x=350,
+        y=height - 80,
         width=120,
         height=60,
         preserveAspectRatio=True,
