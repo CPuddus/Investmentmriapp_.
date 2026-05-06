@@ -215,7 +215,6 @@ profit_chart = alt.Chart(df).mark_bar().encode(
 st.altair_chart(profit_chart, use_container_width=True)
 
 
-
 # =========================================================
 # INSIGHTS (mancava)
 # =========================================================
