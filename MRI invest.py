@@ -421,7 +421,7 @@ def create_pdf_enterprise():
     ax1.legend(loc="upper left")
 
     chart1 = fig_to_img(fig1)
-    c.drawImage(ImageReader(chart1), 80, 320, width=400, height=200)
+    c.drawImage(ImageReader(chart1), 80, 320, width=430, height=200)
 
     # =============================
     # CHART 2: PROFIT
@@ -440,7 +440,7 @@ def create_pdf_enterprise():
     ax2.spines[['top', 'right']].set_visible(False)
 
     chart2 = fig_to_img(fig2)
-    c.drawImage(ImageReader(chart2), 80, 70, width=400, height=200)
+    c.drawImage(ImageReader(chart2), 80, 70, width=430, height=200)
 
     # =====================================================
     # FOOTER
