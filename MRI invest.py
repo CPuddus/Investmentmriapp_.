@@ -491,11 +491,10 @@ if st.button("Generate Report"):
 # =============================
 # DOWNLOAD BUTTON
 # =============================
-if st.session_state.pdf_report is not None:
-
-    st.download_button(
-    label="Download PDF",
-    data=st.session_state.pdf_report,
+if st.download_button(
+    "Download PDF",
+    data=create_pdf_enterprise(),
     file_name="MRI_ROI_Report.pdf",
     mime="application/pdf"
-)
+):
+    pass
