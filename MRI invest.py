@@ -482,7 +482,7 @@ c.drawString(50, 40, "Confidential – Internal Use Only | Generated MRI ROI Mod
 c.save()
 buffer.seek(0)
 
-return buffer
+    return buffer
 
 # =========================================================
 # DOWNLOAD
