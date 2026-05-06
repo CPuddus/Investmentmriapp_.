@@ -316,7 +316,7 @@ def create_pdf_enterprise():
     if logo:
         c.drawImage(
             logo,
-            x=250,              # posizione X (prova 50 o 400)
+            x=350,              # posizione X (prova 50 o 400)
             y=height - 60,    # posizione Y
             width=80,
             height=10,
@@ -370,7 +370,7 @@ def create_pdf_enterprise():
     c.setFont("Helvetica", 9)
     c.setFillColorRGB(*grey)
 
-    y = height - 145
+    y = height - 150
     for line in summary_text:
         c.drawString(55, y, "• " + line)
         y -= 14
@@ -380,7 +380,7 @@ def create_pdf_enterprise():
     # =====================================================
     c.setFont("Helvetica-Bold", 13)
     c.setFillColorRGB(*title_color)
-    c.drawString(320, height - 135, "Key Assumptions")
+    c.drawString(350, height - 135, "Key Assumptions")
 
     c.setFont("Helvetica", 9)
     c.setFillColorRGB(*grey)
@@ -396,9 +396,9 @@ def create_pdf_enterprise():
         f"Maintenance: {format_currency(maintenance_cost, currency_symbol, selected_currency)}",
     ]
 
-    y = height - 145
+    y = height - 150
     for a in assumptions:
-        c.drawString(320, y, "• " + a)
+        c.drawString(350, y, "• " + a)
         y -= 14
 
     # =====================================================
@@ -436,7 +436,7 @@ def create_pdf_enterprise():
     ax1.legend(loc="upper left")
 
     chart1 = fig_to_img(fig1)
-    c.drawImage(ImageReader(chart1), 80, 300, width=450, height=200)
+    c.drawImage(ImageReader(chart1), 80, 280, width=450, height=200)
 
     # =============================
     # CHART 2: PROFIT
@@ -455,7 +455,7 @@ def create_pdf_enterprise():
     ax2.spines[['top', 'right']].set_visible(False)
 
     chart2 = fig_to_img(fig2)
-    c.drawImage(ImageReader(chart2), 80, 90, width=450, height=200)
+    c.drawImage(ImageReader(chart2), 80, 120, width=450, height=200)
 
     # =====================================================
     # FOOTER
