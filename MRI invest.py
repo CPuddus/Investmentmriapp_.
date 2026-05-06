@@ -425,62 +425,62 @@ def fig_to_img(fig):
     plt.close(fig)
     return buf
 
-# =====================================================
-# CHART 1: REVENUE vs COSTS
-# =====================================================
-fig1, ax1 = plt.subplots(figsize=(6, 2.5))
-
-ax1.plot(df["Year"], df["Revenues"], label="Revenue", linewidth=2, color="#4daf4a")
-ax1.plot(df["Year"], df["Expenses"], label="Costs", linewidth=2, color="#e41a1c")
-
-ax1.set_title(f"Revenue vs Costs ({currency_symbol})")
-
-# valuta asse Y
-ax1.yaxis.set_major_formatter(formatter)
-
-# stile consulting
-ax1.grid(True, linestyle="--", linewidth=0.5, alpha=0.7)
-ax1.spines[['top', 'right']].set_visible(False)
-
-# legenda dentro
-ax1.legend(loc="upper left")
-
-chart1 = fig_to_img(fig1)
-c.drawImage(ImageReader(chart1), 80, y - 200, width=400, height=200)
-
-y -= 220
-
-# =====================================================
-# CHART 2: PROFIT EVOLUTION
-# =====================================================
-fig2, ax2 = plt.subplots(figsize=(6, 2.5))
-
-colors = ["#2E7D32" if v >= 0 else "#C62828" for v in df["Profit"]]
-ax2.bar(df["Year"], df["Profit"], color=colors)
-
-ax2.axhline(0, color="black", linewidth=0.8)
-ax2.set_title(f"Profit Evolution ({currency_symbol})")
-
-# valuta asse Y
-ax2.yaxis.set_major_formatter(formatter)
-
-# stile consulting
-ax2.grid(True, linestyle="--", linewidth=0.5, alpha=0.7)
-ax2.spines[['top', 'right']].set_visible(False)
-
-chart2 = fig_to_img(fig2)
-c.drawImage(ImageReader(chart2), 80, 70, width=400, height=200)
-
-
-# =====================================================
-# FOOTER (consulting style)
-# =====================================================
-c.setFont("Helvetica", 8)
-c.setFillColorRGB(*light_grey)
-c.drawString(50, 40, "Confidential – Internal Use Only | Generated MRI ROI Model")
-
-c.save()
-buffer.seek(0)
+    # =====================================================
+    # CHART 1: REVENUE vs COSTS
+    # =====================================================
+    fig1, ax1 = plt.subplots(figsize=(6, 2.5))
+    
+    ax1.plot(df["Year"], df["Revenues"], label="Revenue", linewidth=2, color="#4daf4a")
+    ax1.plot(df["Year"], df["Expenses"], label="Costs", linewidth=2, color="#e41a1c")
+    
+    ax1.set_title(f"Revenue vs Costs ({currency_symbol})")
+    
+    # valuta asse Y
+    ax1.yaxis.set_major_formatter(formatter)
+    
+    # stile consulting
+    ax1.grid(True, linestyle="--", linewidth=0.5, alpha=0.7)
+    ax1.spines[['top', 'right']].set_visible(False)
+    
+    # legenda dentro
+    ax1.legend(loc="upper left")
+    
+    chart1 = fig_to_img(fig1)
+    c.drawImage(ImageReader(chart1), 80, y - 200, width=400, height=200)
+    
+    y -= 220
+    
+    # =====================================================
+    # CHART 2: PROFIT EVOLUTION
+    # =====================================================
+    fig2, ax2 = plt.subplots(figsize=(6, 2.5))
+    
+    colors = ["#2E7D32" if v >= 0 else "#C62828" for v in df["Profit"]]
+    ax2.bar(df["Year"], df["Profit"], color=colors)
+    
+    ax2.axhline(0, color="black", linewidth=0.8)
+    ax2.set_title(f"Profit Evolution ({currency_symbol})")
+    
+    # valuta asse Y
+    ax2.yaxis.set_major_formatter(formatter)
+    
+    # stile consulting
+    ax2.grid(True, linestyle="--", linewidth=0.5, alpha=0.7)
+    ax2.spines[['top', 'right']].set_visible(False)
+    
+    chart2 = fig_to_img(fig2)
+    c.drawImage(ImageReader(chart2), 80, 70, width=400, height=200)
+    
+    
+    # =====================================================
+    # FOOTER (consulting style)
+    # =====================================================
+    c.setFont("Helvetica", 8)
+    c.setFillColorRGB(*light_grey)
+    c.drawString(50, 40, "Confidential – Internal Use Only | Generated MRI ROI Model")
+    
+    c.save()
+    buffer.seek(0)
 
     return buffer
 
