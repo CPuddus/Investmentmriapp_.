@@ -364,7 +364,7 @@ def create_pdf_enterprise():
     c.drawString(50, height - 135, "Summary")
 
     summary_text = [
-        f"The total profit in {years} is {format_currency(display_profit, currency_symbol, selected_currency)}.",
+        f"The total profit in {years} years is {format_currency(round(display_profit), currency_symbol, selected_currency)}.",
         f"The MRI investment generates a total ROI of {roi:.1f}%.",
         f"{'Break-even achieved in year ' + str(round(break_even,1)) if break_even else 'Break-even not achieved within analysis period.'}",
     ]
