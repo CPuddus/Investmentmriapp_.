@@ -4,6 +4,7 @@ import altair as alt
 from io import BytesIO
 import matplotlib.pyplot as plt
 from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
 
 ESAOTE_GREEN = "#6CC24A"
 LOGO_URL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTso1Ip1hX3Ji8xSyaQGMKfVBEuea5_IWuDkw&s"
