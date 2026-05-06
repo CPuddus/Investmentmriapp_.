@@ -219,7 +219,7 @@ line_chart = alt.Chart(df).transform_fold(
             legendX=10,                 # posizione interna
             legendY=10,
             direction="vertical",
-            title="Flow",
+            title="Cashflow",
             fillColor="white",          # sfondo leggibile
             strokeColor="lightgray"
         )
