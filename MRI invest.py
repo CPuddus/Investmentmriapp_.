@@ -266,6 +266,7 @@ insights = [
 st.markdown("## Insights")
 for i in insights:
     st.write("•", i)
+    
 # =========================================================
 # PDF FUNCTION (FIXED + COMPLETE)
 # =========================================================
@@ -303,14 +304,28 @@ def create_pdf_enterprise():
 # DRAW LOGO
 # =========================
 
-    # logo
-    try:
-        r = requests.get(LOGO_URL, timeout=5)
-        logo = BytesIO(r.content)
-    except:
-        logo = None
+logo = None
 
-    c.line(250, height - 80, 550, height - 90)
+try:
+    r = requests.get(LOGO_URL, timeout=5)
+    r.raise_for_status()
+    logo = ImageReader(BytesIO(r.content))
+except Exception as e:
+    print("Logo error:", e)
+
+# disegna il logo 
+if logo:
+    c.drawImage(
+        logo,
+        x=250,              # posizione X (prova 50 o 400)
+        y=height - 60,    # posizione Y
+        width=80,
+        height=40,
+        preserveAspectRatio=True,
+        mask='auto'
+    )
+
+c.line(250, height - 80, 550, height - 80)
 
     # =====================================================
     # KPI STRIP
