@@ -114,7 +114,7 @@ reporting_cost *= exchange_rate
 
 
 # =============================
-# LEASING (improved clarity)
+# LEASING
 # =============================
 leasing_amount = initial_investment * leasing_pct / 100
 r_month = (interest_pct / 100) / 12
@@ -273,7 +273,7 @@ def create_pdf_enterprise():
 
     c.setFont("Helvetica", 9)
     c.setFillColorRGB(*grey)
-    c.drawString(150, height - 60, f"Currency: {selected_currency}")
+    c.drawString(150, height - 80, f"Currency: {selected_currency}")
 
     c.setFont("Helvetica", 10)
     c.setFillColorRGB(*grey)
@@ -322,7 +322,7 @@ def create_pdf_enterprise():
     # =====================================================
     c.setFont("Helvetica-Bold", 13)
     c.setFillColorRGB(*title_color)
-    c.drawString(50, height - 180, "Summary")
+    c.drawString(50, height - 190, "Summary")
 
     summary_text = [
         f"The MRI investment generates a total ROI of {roi:.1f}%.",
@@ -341,7 +341,7 @@ def create_pdf_enterprise():
     # ASSUMPTIONS
     # =====================================================
     c.setFont("Helvetica-Bold", 13)
-    c.drawString(50, y - 30, "Key Assumptions")
+    c.drawString(150, y - 30, "Key Assumptions")
     
     c.setFont("Helvetica", 9)
     
