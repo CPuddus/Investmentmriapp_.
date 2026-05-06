@@ -200,7 +200,10 @@ line_chart = alt.Chart(df).transform_fold(
 ).mark_line().encode(
     x="Year:O",
     y=alt.Y("value:Q", axis=alt.Axis(format="~s")),
-    color="key:N"
+    color=alt.condition(
+        alt.value(ESAOTE_GREEN),
+        alt.value("red")
+    )
 )
 
 st.altair_chart(line_chart, use_container_width=True)
@@ -260,7 +263,7 @@ def create_pdf_enterprise():
     light_grey = (0.6, 0.6, 0.6)
 
     # =====================================================
-    # HEADER (clean consulting style)
+    # HEADER
     # =====================================================
     c.setFont("Helvetica-Bold", 20)
     c.setFillColorRGB(*title_color)
@@ -354,7 +357,7 @@ def create_pdf_enterprise():
     ax1.legend()
     chart1 = fig_to_img(fig1)
 
-    c.drawImage(ImageReader(chart1), 50, y - 180, width=500, height=250)
+    c.drawImage(ImageReader(chart1), 50, y - 220, width=500, height=250)
 
 
     # =====================================================
@@ -398,8 +401,8 @@ if st.button("Generate Report"):
 if st.session_state.pdf_report:
 
     st.download_button(
-        "Download Executive PDF",
+        "Download  PDF",
         data=st.session_state.pdf_report,
-        file_name="MRI_ROI_Executive_Report.pdf",
+        file_name="MRI_ROI_Report.pdf",
         mime="application/pdf"
     )
