@@ -345,7 +345,8 @@ def create_pdf_enterprise():
     c.drawString(300, height - 180, "Key Assumptions")
     
     c.setFont("Helvetica", 9)
-    
+    c.setFillColorRGB(*grey)
+
     assumptions = [
         f"Initial Investment: {format_currency(initial_investment, currency_symbol, selected_currency)}",
         f"Exams per Day: {exams_per_day}",
@@ -357,7 +358,7 @@ def create_pdf_enterprise():
         f"Maintenance: {format_currency(maintenance_cost, currency_symbol, selected_currency)}",
     ]
     
-    yy = y - 50
+    yy = y - 150
     for a in assumptions:
         c.drawString(300, yy, "• " + a)
         yy -= 12
