@@ -317,7 +317,7 @@ def create_pdf_enterprise():
     if logo:
         c.drawImage(
         logo,
-        x=350,
+        x=380,
         y=height - 80,
         width=120,
         height=60,
@@ -424,18 +424,24 @@ def create_pdf_enterprise():
     # CHART 1: REVENUE vs COSTS
     # =============================
     fig1, ax1 = plt.subplots(figsize=(6, 2.5))
-
+    
     ax1.plot(df["Year"], df["Revenues"], label="Revenue", linewidth=2, color="#4daf4a")
     ax1.plot(df["Year"], df["Expenses"], label="Costs", linewidth=2, color="#e41a1c")
-
+    
     ax1.set_title(f"Revenue vs Costs ({currency_symbol})")
-
+    
+    # ✅ asse X
+    ax1.set_xlabel("Years")
+    
+    # opzionale: asse Y più chiaro
+    ax1.set_ylabel(f"Value ({currency_symbol})")
+    
     ax1.yaxis.set_major_formatter(formatter)
-
+    
     ax1.grid(True, linestyle="--", linewidth=0.5, alpha=0.7)
     ax1.spines[['top', 'right']].set_visible(False)
     ax1.legend(loc="upper left")
-
+    
     chart1 = fig_to_img(fig1)
     c.drawImage(ImageReader(chart1), 80, 350, width=450, height=200)
 
@@ -449,6 +455,8 @@ def create_pdf_enterprise():
 
     ax2.axhline(0, color="black", linewidth=0.8)
     ax2.set_title(f"Profit Evolution ({currency_symbol})")
+    ax1.set_ylabel(f"Value ({currency_symbol})")
+
 
     ax2.yaxis.set_major_formatter(formatter)
 
