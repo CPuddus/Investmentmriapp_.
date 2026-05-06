@@ -443,7 +443,7 @@ def create_pdf_enterprise():
     ax1.legend(loc="upper left")
     
     chart1 = fig_to_img(fig1)
-    c.drawImage(ImageReader(chart1), 80, 350, width=450, height=200)
+    c.drawImage(ImageReader(chart1), 50, 350, width=470, height=220)
 
     # =============================
     # CHART 2: PROFIT
@@ -455,7 +455,8 @@ def create_pdf_enterprise():
 
     ax2.axhline(0, color="black", linewidth=0.8)
     ax2.set_title(f"Profit Evolution ({currency_symbol})")
-    ax1.set_ylabel(f"Value ({currency_symbol})")
+    ax2.set_ylabel(f"Value ({currency_symbol})")
+    ax2.set_xlabel("Years")
 
 
     ax2.yaxis.set_major_formatter(formatter)
@@ -464,7 +465,7 @@ def create_pdf_enterprise():
     ax2.spines[['top', 'right']].set_visible(False)
 
     chart2 = fig_to_img(fig2)
-    c.drawImage(ImageReader(chart2), 80, 120, width=450, height=200)
+    c.drawImage(ImageReader(chart2), 50, 120, width=470, height=220)
 
     # =====================================================
     # FOOTER
