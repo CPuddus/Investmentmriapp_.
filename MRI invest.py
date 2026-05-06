@@ -127,8 +127,7 @@ else:
     monthly_payment = leasing_amount / leas_month
 
 annual_leasing_payment = monthly_payment * 12
-leasing_years = leas_month / 12
-
+leasing_years = int(leas_month / 12)
 
 # =============================
 # MODEL
@@ -143,8 +142,7 @@ def calculate_financials():
 
     for y in range(1, years + 1):
 
-        leasing_cost = annual_leasing_payment if y <= leasing_years else 0
-
+    leasing_cost = annual_leasing_payment if (y - 1) * 12 < leas_month else 0
         yearly_cost = (
             technology_cost +
             electricity_cost +
@@ -178,7 +176,7 @@ df = calculate_financials()
 final_profit = df["Profit"].iloc[-1]
 
 # ROI FIXED (currency-neutral logic)
-roi = (final_profit / (initial_investment / exchange_rate)) * 100 if initial_investment > 0 else 0
+roi = (final_profit / initial_investment) * 100 if initial_investment > 0 else 0
 
 break_even = next((df["Year"].iloc[i] for i in range(len(df)) if df["Profit"].iloc[i] >= 0), None)
 
@@ -200,11 +198,7 @@ line_chart = alt.Chart(df).transform_fold(
 ).mark_line().encode(
     x="Year:O",
     y=alt.Y("value:Q", axis=alt.Axis(format="~s")),
-    color=alt.condition(
-        alt.datum.Profit >= 0,
-        alt.value(ESAOTE_GREEN),
-        alt.value("red")
-    )
+    color="key:N"
 )
 
 st.altair_chart(line_chart, use_container_width=True)
@@ -213,12 +207,11 @@ profit_chart = alt.Chart(df).mark_bar().encode(
     x="Year:O",
     y="Profit:Q",
     color=alt.condition(
-        alt.datum.Profit >= 0,
+        "datum.Profit >= 0",
         alt.value(ESAOTE_GREEN),
         alt.value("red")
     )
 )
-
 st.altair_chart(profit_chart, use_container_width=True)
 
 
@@ -232,6 +225,9 @@ insights = [
     "Trend: " + ("Positive" if df["Profit"].iloc[-3:].mean() > 0 else "Negative")
 ]
 
+st.markdown("## Insights")
+for i in insights:
+    st.write("•", i)
 
 # =========================================================
 # LOGO CACHE
@@ -269,6 +265,9 @@ def create_pdf_enterprise():
     c.setFont("Helvetica-Bold", 20)
     c.setFillColorRGB(*title_color)
     c.drawString(50, height - 60, "MRI Investment ROI Analysis")
+
+    c.setFont("Helvetica", 9)
+    c.drawString(50, height - 95, f"Currency: {selected_currency}")
 
     c.setFont("Helvetica", 10)
     c.setFillColorRGB(*grey)
@@ -331,6 +330,32 @@ def create_pdf_enterprise():
     for line in summary_text:
         c.drawString(55, y, "• " + line)
         y -= 14
+
+    # =====================================================
+    # ASSUMPTIONS
+    # =====================================================
+    c.setFont("Helvetica-Bold", 13)
+    c.drawString(50, y - 30, "Key Assumptions")
+    
+    c.setFont("Helvetica", 9)
+    
+    assumptions = [
+        f"Initial Investment: {format_currency(initial_investment, currency_symbol, selected_currency)}",
+        f"Exams per Day: {exams_per_day}",
+        f"Working Days: {working_days}",
+        f"Avg Price: {format_currency(average_price * exchange_rate, currency_symbol, selected_currency)}",
+        f"Leasing: {leasing_pct}% over {leas_month} months at {interest_pct}%",
+        f"HR Cost (annual): {format_currency(technology_cost, currency_symbol, selected_currency)}",
+        f"Electricity (annual): {format_currency(electricity_cost, currency_symbol, selected_currency)}",
+        f"Maintenance: {format_currency(maintenance_cost, currency_symbol, selected_currency)}",
+    ]
+    
+    yy = y - 50
+    for a in assumptions:
+        c.drawString(55, yy, "• " + a)
+        yy -= 12
+    
+    y = yy - 10
 
 
     # =====================================================
