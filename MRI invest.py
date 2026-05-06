@@ -310,23 +310,6 @@ def create_pdf_enterprise():
     except:
         logo = None
 
-
-# =========================
-# DRAW LOGO
-# =========================
-    if logo:
-        try:
-            c.drawImage(
-                ImageReader(logo),
-                470,
-                height - 60,
-                width=70,
-                height=18
-            )
-        except:
-            pass
-
-    c.setStrokeColorRGB(0.85, 0.85, 0.85)
     c.line(250, height - 80, 550, height - 90)
 
     # =====================================================
