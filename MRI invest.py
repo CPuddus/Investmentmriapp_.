@@ -272,7 +272,8 @@ def create_pdf_enterprise():
     c.drawString(50, height - 60, "MRI Investment ROI Analysis")
 
     c.setFont("Helvetica", 9)
-    c.drawString(50, height - 95, f"Currency: {selected_currency}")
+    c.setFillColorRGB(*grey)
+    c.drawString(150, height - 60, f"Currency: {selected_currency}")
 
     c.setFont("Helvetica", 10)
     c.setFillColorRGB(*grey)
@@ -282,7 +283,7 @@ def create_pdf_enterprise():
     logo = load_logo()
     if logo:
         try:
-            c.drawImage(ImageReader(logo), 470, height - 70, width=70, height=18)
+            c.drawImage(ImageReader(logo), 470, height - 60, width=70, height=18)
         except:
             pass
 
@@ -292,7 +293,7 @@ def create_pdf_enterprise():
 
 
     # =====================================================
-    # KPI STRIP (McKinsey-style top band)
+    # KPI STRIP
     # =====================================================
     def kpi_box(x, y, label, value):
         c.setFont("Helvetica", 9)
