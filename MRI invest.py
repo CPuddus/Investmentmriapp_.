@@ -436,7 +436,7 @@ def create_pdf_enterprise():
     ax1.legend(loc="upper left")
 
     chart1 = fig_to_img(fig1)
-    c.drawImage(ImageReader(chart1), 80, 240, width=450, height=200)
+    c.drawImage(ImageReader(chart1), 80, 350, width=450, height=200)
 
     # =============================
     # CHART 2: PROFIT
