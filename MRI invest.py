@@ -472,18 +472,17 @@ chart2 = fig_to_img(fig2)
 c.drawImage(ImageReader(chart2), 80, 70, width=400, height=200)
 
 
-    # =====================================================
-    # FOOTER (consulting style)
-    # =====================================================
-    c.setFont("Helvetica", 8)
-    c.setFillColorRGB(*light_grey)
-    c.drawString(50, 40, "Confidential – Internal Use Only | Generated MRI ROI Model")
+# =====================================================
+# FOOTER (consulting style)
+# =====================================================
+c.setFont("Helvetica", 8)
+c.setFillColorRGB(*light_grey)
+c.drawString(50, 40, "Confidential – Internal Use Only | Generated MRI ROI Model")
 
-    c.save()
-    buffer.seek(0)
+c.save()
+buffer.seek(0)
 
-    return buffer
-
+return buffer
 
 # =========================================================
 # DOWNLOAD
