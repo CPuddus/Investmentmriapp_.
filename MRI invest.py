@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
+import requests
 from io import BytesIO
 import matplotlib.pyplot as plt
 from reportlab.pdfgen import canvas
@@ -315,16 +316,16 @@ def create_pdf_enterprise():
     # disegna il logo 
     if logo:
         c.drawImage(
-            logo,
-            x=60,              # posizione X (prova 50 o 400)
-            y=height - 350,    # posizione Y
-            width=80,
-            height=10,
-            preserveAspectRatio=True,
-            mask='auto'
-        )
+        logo,
+        x=50,
+        y=height - 100,
+        width=120,
+        height=60,
+        preserveAspectRatio=True,
+        mask='auto'
+    )
     
-    c.line(250, height - 90, 550, height - 80)
+    c.line(250, height - 90, 550, height - 90)
 
     # =====================================================
     # KPI STRIP
