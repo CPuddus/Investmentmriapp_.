@@ -235,7 +235,6 @@ line_chart = alt.Chart(df).transform_fold(
         legend=alt.Legend(orient="top-left")
     )
 )
-st.altair_chart(profit_chart, use_container_width=True)
 
 
 # =========================================================
