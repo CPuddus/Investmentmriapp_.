@@ -307,13 +307,13 @@ def create_pdf_enterprise():
     kpi_box(50, height - 130, "Revenue",
             format_currency(df["Revenues"].iloc[-1], currency_symbol, selected_currency))
 
-    kpi_box(200, height - 130, "Profit",
+    kpi_box(200, height - 120, "Profit",
             format_currency(final_profit, currency_symbol, selected_currency))
 
-    kpi_box(350, height - 130, "ROI",
+    kpi_box(350, height - 120, "ROI",
             f"{roi:.1f}%")
 
-    kpi_box(470, height - 130, "Break-even",
+    kpi_box(470, height - 120, "Break-even",
             f"Y{break_even}" if break_even else "Not reached")
 
 
@@ -322,7 +322,7 @@ def create_pdf_enterprise():
     # =====================================================
     c.setFont("Helvetica-Bold", 13)
     c.setFillColorRGB(*title_color)
-    c.drawString(50, height - 190, "Summary")
+    c.drawString(50, height - 180, "Summary")
 
     summary_text = [
         f"The MRI investment generates a total ROI of {roi:.1f}%.",
