@@ -318,7 +318,7 @@ def create_pdf_enterprise():
 
 
     # =====================================================
-    # SUMMARY (consulting narrative)
+    # SUMMARY
     # =====================================================
     c.setFont("Helvetica-Bold", 13)
     c.setFillColorRGB(*title_color)
@@ -363,7 +363,7 @@ def create_pdf_enterprise():
         c.drawString(300, yy, "• " + a)
         yy -= 14
     
-    y = yy - 10
+
 
 
     # =====================================================
