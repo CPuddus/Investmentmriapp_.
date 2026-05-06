@@ -343,11 +343,11 @@ def create_pdf_enterprise():
     
     
         # KPI BOXES
-        kpi_box(50, height - 130,"Revenue", format_currency(df["Revenues"].iloc[-1], currency_symbol, selected_currency))
+        kpi_box(50, height - 100,"Revenue", format_currency(df["Revenues"].iloc[-1], currency_symbol, selected_currency))
         
-        kpi_box(200,height - 120,"Profit",format_currency(final_profit, currency_symbol, selected_currency))
+        kpi_box(200,height - 100,"Profit",format_currency(final_profit, currency_symbol, selected_currency))
         
-        kpi_box(350,height - 120,"ROI",f"{roi:.1f}%")
+        kpi_box(350,height - 100,"ROI",f"{roi:.1f}%")
         
         # ✅ FIXED BREAK-EVEN (1 decimal)
         break_even_value = (
