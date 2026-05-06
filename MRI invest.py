@@ -449,15 +449,27 @@ def create_pdf_enterprise():
 if "pdf_report" not in st.session_state:
     st.session_state.pdf_report = None
 
+
+# =============================
+# GENERATE REPORT
+# =============================
 if st.button("Generate Report"):
 
     with st.spinner("Building report..."):
-        st.session_state.pdf_report = create_pdf_enterprise()
+        try:
+            st.session_state.pdf_report = create_pdf_enterprise()
+        except Exception as e:
+            st.error(f"Report generation failed: {e}")
+            st.session_state.pdf_report = None
 
-if st.session_state.pdf_report:
+
+# =============================
+# DOWNLOAD BUTTON
+# =============================
+if st.session_state.pdf_report is not None:
 
     st.download_button(
-        "Download  PDF",
+        label="Download PDF",
         data=st.session_state.pdf_report,
         file_name="MRI_ROI_Report.pdf",
         mime="application/pdf"
