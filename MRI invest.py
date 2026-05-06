@@ -360,11 +360,9 @@ def create_pdf_enterprise():
     
     y = height - 200
     for a in assumptions:
-        c.drawString(300, yy, "• " + a)
-        yy -= 14
+        c.drawString(300, y, "• " + a)
+        y -= 14
     
-
-
 
     # =====================================================
     # SECTION: PERFORMANCE OVERVIEW
