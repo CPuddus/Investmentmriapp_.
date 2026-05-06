@@ -363,7 +363,7 @@ def create_pdf_enterprise():
     # =====================================================
     c.setFont("Helvetica-Bold", 13)
     c.setFillColorRGB(*title_color)
-    c.drawString(50, 150, "Summary")
+    c.drawString(50, height - 150, "Summary")
 
     summary_text = [
         f"The MRI investment generates a total ROI of {roi:.1f}%.",
@@ -383,7 +383,7 @@ def create_pdf_enterprise():
     # =====================================================
     c.setFont("Helvetica-Bold", 13)
     c.setFillColorRGB(*title_color)
-    c.drawString(320, 150, "Key Assumptions")
+    c.drawString(320, height - 150, "Key Assumptions")
 
     c.setFont("Helvetica", 9)
     c.setFillColorRGB(*grey)
