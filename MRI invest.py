@@ -367,13 +367,13 @@ def create_pdf_enterprise():
 
     summary_text = [
         f"The MRI investment generates a total ROI of {roi:.1f}%.",
-        f"{'Break-even achieved in year ' + str(break_even) if break_even else 'Break-even not achieved within analysis period.'}",
+        f"{'Break-even achieved in year ' + str(round(break_even)) if break_even else 'Break-even not achieved within analysis period.'}",
     ]
 
     c.setFont("Helvetica", 9)
     c.setFillColorRGB(*grey)
 
-    y = height - 200
+    y = height - 160
     for line in summary_text:
         c.drawString(55, y, "• " + line)
         y -= 14
@@ -399,7 +399,7 @@ def create_pdf_enterprise():
         f"Maintenance: {format_currency(maintenance_cost, currency_symbol, selected_currency)}",
     ]
 
-    y = height - 200
+    y = height - 160
     for a in assumptions:
         c.drawString(320, y, "• " + a)
         y -= 14
