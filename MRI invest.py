@@ -342,21 +342,21 @@ def create_pdf_enterprise():
     c.drawString(x, y - 15, value)
 
 
-# KPI BOXES
-kpi_box(50, height - 130,"Revenue", format_currency(df["Revenues"].iloc[-1], currency_symbol, selected_currency))
-
-kpi_box(200,height - 120,"Profit",format_currency(final_profit, currency_symbol, selected_currency))
-
-kpi_box(350,height - 120,"ROI",f"{roi:.1f}%")
-
-# ✅ FIXED BREAK-EVEN (1 decimal)
-break_even_value = (
-    f"Y{break_even:.1f}"
-    if break_even is not None
-    else "Not reached"
-)
-
-kpi_box(470,height - 120,"Break-even",break_even_value)
+    # KPI BOXES
+    kpi_box(50, height - 130,"Revenue", format_currency(df["Revenues"].iloc[-1], currency_symbol, selected_currency))
+    
+    kpi_box(200,height - 120,"Profit",format_currency(final_profit, currency_symbol, selected_currency))
+    
+    kpi_box(350,height - 120,"ROI",f"{roi:.1f}%")
+    
+    # ✅ FIXED BREAK-EVEN (1 decimal)
+    break_even_value = (
+        f"Y{break_even:.1f}"
+        if break_even is not None
+        else "Not reached"
+    )
+    
+    kpi_box(470,height - 120,"Break-even",break_even_value)
 
     # =====================================================
     # SUMMARY
