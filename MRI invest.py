@@ -358,7 +358,7 @@ def create_pdf_enterprise():
         f"Maintenance: {format_currency(maintenance_cost, currency_symbol, selected_currency)}",
     ]
     
-    yy = y - 150
+    yy = y
     for a in assumptions:
         c.drawString(300, yy, "• " + a)
         yy -= 12
