@@ -309,7 +309,7 @@ def create_pdf_enterprise():
 
 
     # =====================================================
-    # EXECUTIVE SUMMARY (consulting narrative)
+    # SUMMARY (consulting narrative)
     # =====================================================
     c.setFont("Helvetica-Bold", 13)
     c.setFillColorRGB(*title_color)
@@ -354,7 +354,7 @@ def create_pdf_enterprise():
     ax1.legend()
     chart1 = fig_to_img(fig1)
 
-    c.drawImage(ImageReader(chart1), 50, y - 200, width=500, height=250)
+    c.drawImage(ImageReader(chart1), 50, y - 180, width=500, height=250)
 
 
     # =====================================================
@@ -367,7 +367,7 @@ def create_pdf_enterprise():
     ax2.set_title("Profit Evolution")
     chart2 = fig_to_img(fig2)
 
-    c.drawImage(ImageReader(chart2), 50, 60, width=500, height=250)
+    c.drawImage(ImageReader(chart2), 50, 70, width=500, height=250)
 
 
     # =====================================================
@@ -390,9 +390,9 @@ def create_pdf_enterprise():
 if "pdf_report" not in st.session_state:
     st.session_state.pdf_report = None
 
-if st.button("Generate Executive Report"):
+if st.button("Generate Report"):
 
-    with st.spinner("Building executive report..."):
+    with st.spinner("Building report..."):
         st.session_state.pdf_report = create_pdf_enterprise()
 
 if st.session_state.pdf_report:
