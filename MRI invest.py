@@ -209,7 +209,7 @@ line_chart = alt.Chart(df).transform_fold(
     ["Expenses", "Revenues"],
     as_=["Type", "Value"]
 ).mark_line().encode(
-    x=alt.X("Year:O", title="Year"),
+    x=alt.X("Year:O", title="Year", axis=alt.Axis(labelAngle=90)),
     y=alt.Y(
         "Value:Q",
         axis=alt.Axis(labelExpr=label_expr)
