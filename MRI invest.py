@@ -313,10 +313,8 @@ def create_pdf_enterprise():
         except:
             pass
 
-    # divider
     c.setStrokeColorRGB(0.85, 0.85, 0.85)
     c.line(50, height - 90, 550, height - 90)
-
 
     # =====================================================
     # KPI STRIP
@@ -341,7 +339,6 @@ def create_pdf_enterprise():
 
     kpi_box(470, height - 120, "Break-even",
             f"Y{break_even}" if break_even else "Not reached")
-
 
     # =====================================================
     # SUMMARY
@@ -369,7 +366,7 @@ def create_pdf_enterprise():
     c.setFont("Helvetica-Bold", 13)
     c.setFillColorRGB(*title_color)
     c.drawString(320, height - 180, "Key Assumptions")
-    
+
     c.setFont("Helvetica", 9)
     c.setFillColorRGB(*grey)
 
@@ -379,106 +376,79 @@ def create_pdf_enterprise():
         f"Working Days: {working_days}",
         f"Avg Price: {format_currency(average_price * exchange_rate, currency_symbol, selected_currency)}",
         f"Leasing: {leasing_pct}% over {leas_month} months at {interest_pct}%",
-        f"HR Cost (annual): {format_currency(technology_cost, currency_symbol, selected_currency)}",
-        f"Electricity (annual): {format_currency(electricity_cost, currency_symbol, selected_currency)}",
+        f"HR Cost: {format_currency(technology_cost, currency_symbol, selected_currency)}",
+        f"Electricity: {format_currency(electricity_cost, currency_symbol, selected_currency)}",
         f"Maintenance: {format_currency(maintenance_cost, currency_symbol, selected_currency)}",
     ]
-    
+
     y = height - 200
     for a in assumptions:
         c.drawString(320, y, "• " + a)
         y -= 14
-    
 
     # =====================================================
-    # SECTION: PERFORMANCE OVERVIEW
+    # PERFORMANCE SECTION
     # =====================================================
-from matplotlib.ticker import FuncFormatter
-from io import BytesIO
-from reportlab.lib.utils import ImageReader
-import matplotlib.pyplot as plt
 
-# =============================
-# FORMATTER VALUTA
-# =============================
-def currency_formatter(x, pos):
-    return format_currency(x, currency_symbol, selected_currency)
+    from matplotlib.ticker import FuncFormatter
+
+    def currency_formatter(x, pos):
+        return format_currency(x, currency_symbol, selected_currency)
 
     formatter = FuncFormatter(currency_formatter)
-    
-    # =============================
-    # TITLE
-    # =============================
-    c.setFont("Helvetica-Bold", 13)
-    c.setFillColorRGB(*title_color)
-    c.drawString(50, y - 20, f"Performance Overview ({currency_symbol})")
-    
-    y -= 50
 
-# =============================
-# HELPER
-# =============================
-def fig_to_img(fig):
-    buf = BytesIO()
-    fig.savefig(buf, format="png", dpi=300, bbox_inches="tight")
-    buf.seek(0)
-    plt.close(fig)
-    return buf
+    def fig_to_img(fig):
+        buf = BytesIO()
+        fig.savefig(buf, format="png", dpi=300, bbox_inches="tight")
+        buf.seek(0)
+        plt.close(fig)
+        return buf
 
-    # =====================================================
+    # =============================
     # CHART 1: REVENUE vs COSTS
-    # =====================================================
+    # =============================
     fig1, ax1 = plt.subplots(figsize=(6, 2.5))
-    
+
     ax1.plot(df["Year"], df["Revenues"], label="Revenue", linewidth=2, color="#4daf4a")
     ax1.plot(df["Year"], df["Expenses"], label="Costs", linewidth=2, color="#e41a1c")
-    
+
     ax1.set_title(f"Revenue vs Costs ({currency_symbol})")
-    
-    # valuta asse Y
+
     ax1.yaxis.set_major_formatter(formatter)
-    
-    # stile consulting
+
     ax1.grid(True, linestyle="--", linewidth=0.5, alpha=0.7)
     ax1.spines[['top', 'right']].set_visible(False)
-    
-    # legenda dentro
     ax1.legend(loc="upper left")
-    
+
     chart1 = fig_to_img(fig1)
-    c.drawImage(ImageReader(chart1), 80, y - 200, width=400, height=200)
-    
-    y -= 220
-    
-    # =====================================================
-    # CHART 2: PROFIT EVOLUTION
-    # =====================================================
+    c.drawImage(ImageReader(chart1), 80, height - 420, width=400, height=200)
+
+    # =============================
+    # CHART 2: PROFIT
+    # =============================
     fig2, ax2 = plt.subplots(figsize=(6, 2.5))
-    
+
     colors = ["#2E7D32" if v >= 0 else "#C62828" for v in df["Profit"]]
     ax2.bar(df["Year"], df["Profit"], color=colors)
-    
+
     ax2.axhline(0, color="black", linewidth=0.8)
     ax2.set_title(f"Profit Evolution ({currency_symbol})")
-    
-    # valuta asse Y
+
     ax2.yaxis.set_major_formatter(formatter)
-    
-    # stile consulting
+
     ax2.grid(True, linestyle="--", linewidth=0.5, alpha=0.7)
     ax2.spines[['top', 'right']].set_visible(False)
-    
+
     chart2 = fig_to_img(fig2)
     c.drawImage(ImageReader(chart2), 80, 70, width=400, height=200)
-    
-    
+
     # =====================================================
-    # FOOTER (consulting style)
+    # FOOTER
     # =====================================================
     c.setFont("Helvetica", 8)
     c.setFillColorRGB(*light_grey)
     c.drawString(50, 40, "Confidential – Internal Use Only | Generated MRI ROI Model")
-    
+
     c.save()
     buffer.seek(0)
 
