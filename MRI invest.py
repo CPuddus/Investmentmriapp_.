@@ -75,8 +75,9 @@ interest_pct = st.slider("Interest %", 0, 15, 5)
 technology_cost = st.number_input("HR Monthly", 0, 1000000000, 2500) * 12
 electricity_cost = st.number_input("Electricity Monthly", 0, 2000000000, 5000) * 12
 maintenance_cost = st.number_input("Maintenance Annual", 0, 10000000000, 20000)
+Rental_Location_cost = st.number_input("Monthly Rent", 0, 1000000000, 2500) * 12
 
-reporting_pct = st.slider("Reporting Cost %", 0, 20, 5)
+reporting_pct = st.slider("Reporting Cost %", 0, 50, 5)
 
 exams_per_day = st.slider("Exams per Day", 1, 30, 12)
 working_days = st.slider("Working Days", 1, 365, 200)
