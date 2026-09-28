@@ -114,7 +114,8 @@ def calculate_financials(
     maintenance_cost,
     reporting_cost,
     monthly_payment,
-    leas_month
+    leas_month,
+    Rental_Location_cost,
 ):
 
     expenses = [initial_investment]
@@ -133,7 +134,8 @@ def calculate_financials(
             electricity_cost +
             maintenance_cost +
             leasing_cost +
-            reporting_cost
+            reporting_cost +
+            Rental_Location_cost
         )
 
         cumulative_cost += yearly_cost
@@ -161,7 +163,8 @@ df = calculate_financials(
     maintenance_cost,
     reporting_cost,
     monthly_payment,
-    leas_month
+    leas_month,
+    Rental_Location_cost,
 )
 
 
